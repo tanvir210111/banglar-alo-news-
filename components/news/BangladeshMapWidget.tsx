@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Search, RotateCcw } from "lucide-react";
+import { MapPin, Search, RotateCcw, ExternalLink } from "lucide-react";
 import { BANGLADESH_DIVISIONS, DistrictItem } from "@/lib/bangladeshGeoData";
+import { BANGLADESH_DISTRICTS_SVG } from "@/lib/bangladeshDistrictsSvgData";
 import { useLanguage } from "@/context/LanguageContext";
 import BangladeshExactSvgMap from "./BangladeshExactSvgMap";
 
@@ -73,10 +74,22 @@ export default function BangladeshMapWidget() {
   // Search Action
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedDistrict) {
+      const targetDist = BANGLADESH_DISTRICTS_SVG.find(
+        (d) => d.nameBn === selectedDistrict || d.name.toLowerCase() === selectedDistrict.toLowerCase() || d.id === selectedDistrict
+      );
+      const slug = targetDist ? targetDist.id : encodeURIComponent(selectedDistrict);
+      if (selectedUpazila) {
+        router.push(`/district/${slug}?upazila=${encodeURIComponent(selectedUpazila)}`);
+      } else {
+        router.push(`/district/${slug}`);
+      }
+      return;
+    }
+
     const queryParts: string[] = [];
     if (selectedUpazila) queryParts.push(selectedUpazila);
-    if (selectedDistrict) queryParts.push(selectedDistrict);
-    if (!selectedDistrict && selectedDivision) {
+    if (selectedDivision) {
       const divObj = BANGLADESH_DIVISIONS.find((d) => d.id === selectedDivision);
       if (divObj) queryParts.push(divObj.name);
     }
@@ -116,9 +129,9 @@ export default function BangladeshMapWidget() {
 
       {/* 3. Selected District/Division Active Indicator */}
       {(selectedDistrict || selectedDivision) && (
-        <div className="bg-white/95 rounded px-2.5 py-1.5 my-2 border border-gray-200 flex items-center justify-between text-xs shadow-xs">
+        <div className="bg-white/95 rounded px-2.5 py-1.5 my-2 border border-gray-200 flex flex-wrap items-center justify-between gap-1 text-xs shadow-xs">
           <div className="flex items-center gap-1.5 font-bold text-[#0B7A43]">
-            <MapPin className="w-3.5 h-3.5 text-[#bd0202]" />
+            <MapPin className="w-3.5 h-3.5 text-[#bd0202] shrink-0" />
             <span>
               {selectedDistrict ? (
                 <>
@@ -130,18 +143,36 @@ export default function BangladeshMapWidget() {
               )}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedDistrict("");
-              setSelectedUpazila("");
-              if (!selectedDistrict) setSelectedDivision("");
-            }}
-            className="flex items-center gap-1 text-[11px] text-red-600 hover:text-red-800 font-semibold cursor-pointer"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>{isBn ? "মুছুন" : "Reset"}</span>
-          </button>
+          <div className="flex items-center gap-2 ml-auto">
+            {selectedDistrict && (
+              <button
+                type="button"
+                onClick={() => {
+                  const targetDist = BANGLADESH_DISTRICTS_SVG.find(
+                    (d) => d.nameBn === selectedDistrict || d.name.toLowerCase() === selectedDistrict.toLowerCase() || d.id === selectedDistrict
+                  );
+                  const slug = targetDist ? targetDist.id : encodeURIComponent(selectedDistrict);
+                  router.push(`/district/${slug}${selectedUpazila ? `?upazila=${encodeURIComponent(selectedUpazila)}` : ""}`);
+                }}
+                className="inline-flex items-center gap-1 bg-[#bd0202] hover:bg-[#a10202] text-white px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-colors shadow-xs"
+              >
+                <span>{isBn ? "সকল খবর দেখুন" : "View News"}</span>
+                <ExternalLink className="w-3 h-3" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDistrict("");
+                setSelectedUpazila("");
+                if (!selectedDistrict) setSelectedDivision("");
+              }}
+              className="flex items-center gap-1 text-[11px] text-red-600 hover:text-red-800 font-semibold cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>{isBn ? "মুছুন" : "Reset"}</span>
+            </button>
+          </div>
         </div>
       )}
 

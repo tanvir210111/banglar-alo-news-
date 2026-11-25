@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BANGLADESH_DISTRICTS_SVG, DIVISION_CENTERS, DistrictSvgItem } from '@/lib/bangladeshDistrictsSvgData';
 
 interface BangladeshExactSvgMapProps {
@@ -16,6 +17,7 @@ export default function BangladeshExactSvgMap({
   selectedDivision,
   selectedDistrict,
 }: BangladeshExactSvgMapProps) {
+  const router = useRouter();
   const [hoveredDistrict, setHoveredDistrict] = useState<DistrictSvgItem | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -26,6 +28,8 @@ export default function BangladeshExactSvgMap({
     if (onSelectDivision && d.divisionId) {
       onSelectDivision(d.divisionId);
     }
+    // Navigate directly to that district's all news page
+    router.push(`/district/${d.id}`);
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -89,7 +93,7 @@ export default function BangladeshExactSvgMap({
                 onMouseEnter={() => setHoveredDistrict(d)}
                 filter={isSelected ? "url(#selected-glow)" : undefined}
               >
-                <title>{`${d.nameBn} জেলা (${d.divisionBn} বিভাগ)`}</title>
+                <title>{`${d.nameBn} জেলা (${d.divisionBn} বিভাগ) — সকল সংবাদ দেখতে ক্লিক করুন`}</title>
               </path>
             );
           })}
