@@ -177,12 +177,12 @@ export default function VideoNewsManager() {
     setTimeout(() => setSuccessMessage(""), 3000);
   };
 
-  // Reset to default
-  const handleResetDefaults = async () => {
-    if (confirm("সব ভিডিও ডিফল্ট তালিকায় ফিরিয়ে নিতে চান?")) {
-      setVideos(INITIAL_VIDEOS);
-      await saveVideoItems(INITIAL_VIDEOS);
-      setSuccessMessage("ডিফল্ট ভিডিও তালিকা রিস্টোর করা হয়েছে।");
+  // Clear all videos
+  const handleClearAll = async () => {
+    if (confirm("আপনি কি নিশ্চিত সব ভিডিও মুছে ফেলতে চান?")) {
+      setVideos([]);
+      await saveVideoItems([]);
+      setSuccessMessage("সব ভিডিও সফলভাবে মুছে ফেলা হয়েছে।");
       setTimeout(() => setSuccessMessage(""), 3000);
     }
   };
@@ -233,14 +233,16 @@ export default function VideoNewsManager() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleResetDefaults}
-              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/20"
-              title="ডিফল্ট ভিডিও তালিকা রিস্টোর করুন"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>রিসেট</span>
-            </button>
+            {videos.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/20"
+                title="সব ভিডিও মুছে ফেলুন"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>সব মুছুন</span>
+              </button>
+            )}
             <button
               onClick={handleOpenAdd}
               className="px-5 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-[#1877F2] text-sm font-black transition-all shadow-md flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"

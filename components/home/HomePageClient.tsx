@@ -101,7 +101,7 @@ export default function HomePageClient({
       try {
         const { getAllVideoItems } = await import("@/services/videoService");
         const list = await getAllVideoItems();
-        if (Array.isArray(list) && list.length > 0) {
+        if (Array.isArray(list)) {
           setLiveVideos(list);
         }
       } catch {}
