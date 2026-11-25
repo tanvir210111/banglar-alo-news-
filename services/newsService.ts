@@ -959,32 +959,12 @@ export const FACEBOOK_PAGE_VIDEOS: VideoItem[] = [];
 
 export async function getVideoItems(): Promise<VideoItem[]> {
   try {
-    const res = await api.get<any[]>("/news/videos?limit=10");
-    if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
-      // Only return real videos with genuine video links (no ABCDE or placeholders)
-      const validVideos = res.data.filter(
-        (v) => v.youtubeLink && !v.youtubeLink.includes("ABCDE") && v.youtubeLink.trim().length > 10
-      );
-      return validVideos.map((v) => ({
-        id: String(v.id || v._id),
-        title: v.title,
-        slug: v.slug,
-        videoUrl: v.youtubeLink,
-        thumbnail:
-          typeof v.featuredImage === "string"
-            ? v.featuredImage
-            : v.featuredImage?.url || "",
-        duration: "ভিডিও",
-        category: v.category?.name || "ভিডিও",
-        views: v.viewsCount || 0,
-        date: formatToBengaliDate(v.publishedDate),
-        summary: v.summary || v.title,
-      }));
-    }
+    const { getAllVideoItems } = await import("@/services/videoService");
+    return await getAllVideoItems();
   } catch (err) {
     console.warn("No video items found or error", err);
+    return [];
   }
-  return [];
 }
 
 export async function searchArticles(

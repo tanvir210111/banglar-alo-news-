@@ -9,6 +9,7 @@ import PopularScrollSection from "@/components/news/PopularScrollSection";
 import DualCategorySection from "@/components/news/DualCategorySection";
 import AdvertisementPlaceholder from "@/components/news/AdvertisementPlaceholder";
 import HomeFacebookVideoSection from "@/components/news/HomeFacebookVideoSection";
+import BanglarAloItBanner from "@/components/news/BanglarAloItBanner";
 import FacebookPageWidget from "@/components/common/FacebookPageWidget";
 import BangladeshMapWidget from "@/components/news/BangladeshMapWidget";
 import RecentPopularTabWidget from "@/components/news/RecentPopularTabWidget";
@@ -81,6 +82,7 @@ export default function HomePageClient({
   // Reactive state for real-time live article insertion without page refresh
   const [liveLatest, setLiveLatest] = useState<Article[]>(latestArticles);
   const [liveFeatured, setLiveFeatured] = useState<Article[]>(featuredArticles);
+  const [liveVideos, setLiveVideos] = useState(videoItems);
 
   useEffect(() => {
     setLiveLatest(latestArticles);
@@ -89,6 +91,47 @@ export default function HomePageClient({
   useEffect(() => {
     setLiveFeatured(featuredArticles);
   }, [featuredArticles]);
+
+  useEffect(() => {
+    setLiveVideos(videoItems);
+  }, [videoItems]);
+
+  // Video sync listener for real-time updates from admin panel
+  useEffect(() => {
+    const syncVideos = async () => {
+      try {
+        const { getAllVideoItems } = await import("@/services/videoService");
+        const list = await getAllVideoItems();
+        if (Array.isArray(list) && list.length > 0) {
+          setLiveVideos(list);
+        }
+      } catch {}
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "banglar_alo_videos_updated") {
+        syncVideos();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      if ("BroadcastChannel" in window) {
+        channel = new BroadcastChannel("banglar_alo_news_channel");
+        channel.onmessage = (event) => {
+          if (event.data?.type === "VIDEOS_UPDATED") {
+            syncVideos();
+          }
+        };
+      }
+    } catch {}
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      channel?.close();
+    };
+  }, []);
 
   // Real-time live update: auto-add new articles without requiring full page refresh
   useEffect(() => {
@@ -481,6 +524,9 @@ export default function HomePageClient({
 
   return (
     <div className="space-y-8 pb-10">
+      {/* 0. Banglar Alo IT Leaderboard Banner Ad (Above Latest / সর্বশেষ-এর উপরে) */}
+      <BanglarAloItBanner slotLabel={isBn ? "হোমপেজ টপ" : "Homepage Top"} />
+
       {/* 1. Main Latest News Section (সর্বশেষ) */}
       <section className="bg-white rounded-lg border border-[#E2E6EB] shadow-xs p-4 sm:p-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
@@ -564,6 +610,9 @@ export default function HomePageClient({
 
       {/* 3. Most Read Section (সর্বাধিক পঠিত) */}
       <PopularScrollSection articles={popularList} />
+
+      {/* 3.5 Banglar Alo IT Leaderboard Banner Ad (Between Latest & Countrywide / সর্বশেষ ও সারাদেশ-এর মাঝে) */}
+      <BanglarAloItBanner slotLabel={isBn ? "সারাদেশের আগে" : "Mid Banner"} />
 
       {/* 4. Menubar Serial 2: সারাদেশ (Countrywide) - লেআউট + Right side: সর্বশেষ সংবাদ ও আলোচিত সংবাদ */}
       <section className="bg-white rounded-lg border border-[#E2E6EB] shadow-xs p-4 sm:p-5">
@@ -712,7 +761,7 @@ export default function HomePageClient({
 
         {/* Video Content Grid */}
         <div className="w-full">
-          <HomeFacebookVideoSection videos={videoItems} />
+          <HomeFacebookVideoSection videos={liveVideos} />
         </div>
       </section>
 

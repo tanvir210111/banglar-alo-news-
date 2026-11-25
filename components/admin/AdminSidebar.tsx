@@ -48,7 +48,7 @@ export default function AdminSidebar({
         const u = JSON.parse(stored);
         if (u.role) setUserRole(u.role);
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
@@ -67,11 +67,10 @@ export default function AdminSidebar({
           <Link
             key={idx}
             href={item.href}
-            className={`group flex items-center gap-2.5 py-0.5 text-[13.5px] transition-colors select-none ${
-              isActive
-                ? "text-[#0B7A43] font-bold"
-                : "text-[#0A2540] font-semibold hover:text-[#0B7A43]"
-            }`}
+            className={`group flex items-center gap-2.5 py-0.5 text-[13.5px] transition-colors select-none ${isActive
+              ? "text-[#0B7A43] font-bold"
+              : "text-[#0A2540] font-semibold hover:text-[#0B7A43]"
+              }`}
           >
             {isActive ? (
               <span className="w-[6px] h-[6px] rounded-full bg-[#0B7A43] shrink-0 shadow-xs" />
@@ -87,11 +86,10 @@ export default function AdminSidebar({
 
   return (
     <aside
-      className={`fixed lg:sticky top-[60px] left-0 z-30 h-[calc(100vh-60px)] shrink-0 bg-white border-[#E8EEF8] transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden ${
-        isOpen
-          ? "w-[270px] border-r translate-x-0 opacity-100"
-          : "w-0 border-r-0 -translate-x-full lg:translate-x-0 lg:w-0 opacity-0 pointer-events-none"
-      }`}
+      className={`fixed lg:sticky top-[60px] left-0 z-30 h-[calc(100vh-60px)] shrink-0 bg-white border-[#E8EEF8] transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden ${isOpen
+        ? "w-[270px] border-r translate-x-0 opacity-100"
+        : "w-0 border-r-0 -translate-x-full lg:translate-x-0 lg:w-0 opacity-0 pointer-events-none"
+        }`}
       style={{
         scrollbarWidth: isOpen ? "thin" : "none",
         scrollbarColor: "#CBD5E1 transparent",
@@ -101,11 +99,10 @@ export default function AdminSidebar({
         {/* 1. Dashboard (Active state: blue-violet icon, text, light blue pill) */}
         <Link
           href="/admin"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin" || activePath === "/admin"
-              ? "bg-[#ECFDF5] text-[#4318FF]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin" || activePath === "/admin"
+            ? "bg-[#ECFDF5] text-[#4318FF]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Home className="w-[19px] h-[19px] text-[#4318FF] stroke-[2.2]" />
           <span>Dashboard</span>
@@ -116,20 +113,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("mediaLibrary")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.mediaLibrary
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.mediaLibrary
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <ImageIcon className="w-[19px] h-[19px] text-[#B45309] stroke-[2]" />
               <span>Media Library</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.mediaLibrary ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.mediaLibrary ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {expandedMenus.mediaLibrary &&
@@ -151,20 +146,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("article")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.article
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.article
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <PenTool className="w-[19px] h-[19px] text-[#DC2626] stroke-[2]" />
               <span>Article</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.article ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.article ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {expandedMenus.article &&
@@ -182,11 +175,10 @@ export default function AdminSidebar({
         {/* Auto News */}
         <Link
           href="/admin/auto-news"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin/auto-news" || activePath === "/admin/feature/auto-news"
-              ? "bg-[#ECFDF5] text-[#10B981]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/auto-news" || activePath === "/admin/feature/auto-news"
+            ? "bg-[#ECFDF5] text-[#10B981]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Zap className="w-[19px] h-[19px] text-[#10B981] fill-[#10B981]" />
           <span>Auto News</span>
@@ -195,11 +187,10 @@ export default function AdminSidebar({
         {/* News Agent */}
         <Link
           href="/admin/auto-news"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin/feature/news-agent"
-              ? "bg-[#ECFDF5] text-[#10B981]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/feature/news-agent"
+            ? "bg-[#ECFDF5] text-[#10B981]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Bot className="w-[19px] h-[19px] text-[#10B981]" />
           <span>News Agent v4</span>
@@ -208,11 +199,10 @@ export default function AdminSidebar({
         {/* Live TV */}
         <Link
           href="/admin/feature/live-tv"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin/feature/live-tv"
-              ? "bg-[#ECFDF5] text-[#10B981]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/feature/live-tv"
+            ? "bg-[#ECFDF5] text-[#10B981]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Radio className="w-[19px] h-[19px] text-[#10B981]" />
           <span>Live TV</span>
@@ -223,20 +213,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("audioNews")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.audioNews || activePath?.includes("audio-news")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.audioNews || activePath?.includes("audio-news")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Headphones className="w-[19px] h-[19px] text-[#EA580C]" />
               <span>Audio News</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.audioNews || activePath?.includes("audio-news") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.audioNews || activePath?.includes("audio-news") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.audioNews || activePath?.includes("audio-news")) &&
@@ -251,20 +239,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("photoStory")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.photoStory || activePath?.includes("photo-story")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.photoStory || activePath?.includes("photo-story")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <BookOpen className="w-[19px] h-[19px] text-[#9333EA]" />
               <span>Photo Story</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.photoStory || activePath?.includes("photo-story") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.photoStory || activePath?.includes("photo-story") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.photoStory || activePath?.includes("photo-story")) &&
@@ -279,20 +265,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("reelsStory")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.reelsStory || activePath?.includes("reels-story")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.reelsStory || activePath?.includes("reels-story")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Film className="w-[19px] h-[19px] text-[#EF4444]" />
               <span>Reels Story</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.reelsStory || activePath?.includes("reels-story") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.reelsStory || activePath?.includes("reels-story") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.reelsStory || activePath?.includes("reels-story")) &&
@@ -307,20 +291,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("quotes")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.quotes || activePath?.includes("quotes")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.quotes || activePath?.includes("quotes")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Quote className="w-[19px] h-[19px] text-[#DC2626]" />
               <span>Quotes</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.quotes || activePath?.includes("quotes") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.quotes || activePath?.includes("quotes") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.quotes || activePath?.includes("quotes")) &&
@@ -335,20 +317,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("photoGallery")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.photoGallery || activePath?.includes("photo-gallery")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.photoGallery || activePath?.includes("photo-gallery")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Images className="w-[19px] h-[19px] text-[#F97316]" />
               <span>Photo Gallery</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.photoGallery || activePath?.includes("photo-gallery") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.photoGallery || activePath?.includes("photo-gallery") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.photoGallery || activePath?.includes("photo-gallery")) &&
@@ -358,17 +338,28 @@ export default function AdminSidebar({
             ])}
         </div>
 
-        {/* Video Gallery */}
+        {/* Video Gallery / Video News */}
         <Link
-          href="/admin/feature/video-gallery"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin/feature/video-gallery"
-              ? "bg-[#ECFDF5] text-[#7C3AED]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          href="/admin/videos"
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/videos" || activePath === "/admin/feature/video-gallery"
+            ? "bg-[#ECFDF5] text-[#7C3AED]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Video className="w-[19px] h-[19px] text-[#7C3AED]" />
-          <span>Video Gallery</span>
+          <span>Video News (ভিডিও সংবাদ)</span>
+        </Link>
+
+        {/* Our Family (আমাদের পরিবার) */}
+        <Link
+          href="/admin/our-family"
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/our-family" || activePath === "/admin/feature/our-family"
+            ? "bg-[#ECFDF5] text-[#0B7A43]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
+        >
+          <Users className="w-[19px] h-[19px] text-[#0B7A43]" />
+          <span>আমাদের পরিবার (Our Family)</span>
         </Link>
 
         {/* Poll */}
@@ -376,20 +367,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("poll")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.poll || activePath?.includes("poll")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.poll || activePath?.includes("poll")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <PieChart className="w-[19px] h-[19px] text-[#0B7A43]" />
               <span>Poll</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.poll || activePath?.includes("poll") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.poll || activePath?.includes("poll") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.poll || activePath?.includes("poll")) &&
@@ -402,11 +391,10 @@ export default function AdminSidebar({
         {/* Reactions & Ratings */}
         <Link
           href="/admin/feature/reactions"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin/feature/reactions"
-              ? "bg-[#ECFDF5] text-[#9333EA]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/feature/reactions"
+            ? "bg-[#ECFDF5] text-[#9333EA]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Smile className="w-[19px] h-[19px] text-[#9333EA]" />
           <span>Reactions & Ratings</span>
@@ -417,20 +405,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("pages")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.pages || activePath?.includes("pages")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.pages || activePath?.includes("pages")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <FileText className="w-[19px] h-[19px] text-[#16A34A] fill-[#16A34A]" />
               <span>Pages</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.pages || activePath?.includes("pages") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.pages || activePath?.includes("pages") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.pages || activePath?.includes("pages")) &&
@@ -452,20 +438,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("headerFooter")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.headerFooter || activePath?.includes("header-footer")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.headerFooter || activePath?.includes("header-footer")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Layout className="w-[19px] h-[19px] text-[#16A34A] fill-[#16A34A]" />
               <span>Header and Footer</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.headerFooter || activePath?.includes("header-footer") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.headerFooter || activePath?.includes("header-footer") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.headerFooter || activePath?.includes("header-footer")) &&
@@ -480,20 +464,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("homeSettings")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.homeSettings || activePath?.includes("homepage-settings")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.homeSettings || activePath?.includes("homepage-settings")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Home className="w-[19px] h-[19px] text-[#3B82F6] fill-[#3B82F6]" />
               <span>Homepage Settings</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.homeSettings || activePath?.includes("homepage-settings") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.homeSettings || activePath?.includes("homepage-settings") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.homeSettings || activePath?.includes("homepage-settings")) &&
@@ -508,20 +490,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("postSettings")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.postSettings || activePath?.includes("post-settings")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.postSettings || activePath?.includes("post-settings")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Layers className="w-[19px] h-[19px] text-[#065F34]" />
               <span>Post Settings</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.postSettings || activePath?.includes("post-settings") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.postSettings || activePath?.includes("post-settings") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.postSettings || activePath?.includes("post-settings")) &&
@@ -536,11 +516,10 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("advertisement")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.advertisement || activePath?.includes("advertisement")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.advertisement || activePath?.includes("advertisement")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <span className="w-4 h-4 bg-[#7C3AED] text-white text-[9.5px] font-black rounded-xs flex items-center justify-center leading-none">
@@ -549,9 +528,8 @@ export default function AdminSidebar({
               <span>Advertisement</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.advertisement || activePath?.includes("advertisement") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.advertisement || activePath?.includes("advertisement") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.advertisement || activePath?.includes("advertisement")) &&
@@ -566,20 +544,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("menu")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.menu || activePath?.includes("menu")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.menu || activePath?.includes("menu")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <CreditCard className="w-[19px] h-[19px] text-[#DC2626]" />
               <span>Menu</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.menu || activePath?.includes("menu") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.menu || activePath?.includes("menu") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.menu || activePath?.includes("menu")) &&
@@ -594,20 +570,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("photoCard")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.photoCard || activePath?.includes("photo-card")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.photoCard || activePath?.includes("photo-card")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <CreditCard className="w-[19px] h-[19px] text-[#0B7A43]" />
               <span>Photo Card</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.photoCard || activePath?.includes("photo-card") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.photoCard || activePath?.includes("photo-card") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.photoCard || activePath?.includes("photo-card")) &&
@@ -629,26 +603,24 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("accountManagement")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.accountManagement ||
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.accountManagement ||
               activePath?.includes("/accounts") ||
               activePath?.includes("writers-account")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Users className="w-[19px] h-[19px] text-[#16A34A]" />
               <span>Account Management</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.accountManagement ||
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.accountManagement ||
                 activePath?.includes("/accounts") ||
                 activePath?.includes("writers-account")
-                  ? "rotate-180 text-[#0B7A43]"
-                  : "text-[#A3AED0]"
-              }`}
+                ? "rotate-180 text-[#0B7A43]"
+                : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.accountManagement ||
@@ -666,20 +638,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("settings")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.settings || activePath === "/admin/settings"
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.settings || activePath === "/admin/settings"
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <SettingsIcon className="w-[19px] h-[19px] text-[#0B7A43]" />
               <span>Settings</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.settings || activePath === "/admin/settings" ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.settings || activePath === "/admin/settings" ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.settings || activePath === "/admin/settings") &&
@@ -694,20 +664,18 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => toggleSubmenu("developerZone")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
-              expandedMenus.developerZone || activePath?.includes("developer-zone")
-                ? "bg-[#ECFDF5] text-[#0B7A43]"
-                : "text-[#2B3674] hover:bg-[#F4F7FC]"
-            }`}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${expandedMenus.developerZone || activePath?.includes("developer-zone")
+              ? "bg-[#ECFDF5] text-[#0B7A43]"
+              : "text-[#2B3674] hover:bg-[#F4F7FC]"
+              }`}
           >
             <div className="flex items-center gap-3">
               <Code2 className="w-[19px] h-[19px] text-[#16A34A]" />
               <span>Developer Zone</span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                expandedMenus.developerZone || activePath?.includes("developer-zone") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${expandedMenus.developerZone || activePath?.includes("developer-zone") ? "rotate-180 text-[#0B7A43]" : "text-[#A3AED0]"
+                }`}
             />
           </button>
           {(expandedMenus.developerZone || activePath?.includes("developer-zone")) &&
@@ -720,11 +688,10 @@ export default function AdminSidebar({
         {/* Web Access */}
         <Link
           href="/admin/feature/web-access"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${
-            activePath === "/admin/feature/web-access"
-              ? "bg-[#ECFDF5] text-[#DC2626]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors ${activePath === "/admin/feature/web-access"
+            ? "bg-[#ECFDF5] text-[#DC2626]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <ScanFace className="w-[19px] h-[19px] text-[#DC2626]" />
           <span>Web Access</span>
@@ -733,11 +700,10 @@ export default function AdminSidebar({
         {/* Security */}
         <Link
           href="/admin/feature/security"
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors mb-6 ${
-            activePath === "/admin/feature/security"
-              ? "bg-[#ECFDF5] text-[#DC2626]"
-              : "text-[#2B3674] hover:bg-[#F4F7FC]"
-          }`}
+          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors mb-6 ${activePath === "/admin/feature/security"
+            ? "bg-[#ECFDF5] text-[#DC2626]"
+            : "text-[#2B3674] hover:bg-[#F4F7FC]"
+            }`}
         >
           <Shield className="w-[19px] h-[19px] text-[#DC2626]" />
           <span>Security</span>

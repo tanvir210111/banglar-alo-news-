@@ -516,3 +516,145 @@ interface Advertisement {
    - ক্যাটাগরি: [http://localhost:3010/category/national](http://localhost:3010/category/national)
    - আর্কাইভ: [http://localhost:3010/archive](http://localhost:3010/archive)
    - অ্যাডমিন প্যানেল: [http://localhost:3010/admin](http://localhost:3010/admin)
+   - ভিডিও সংবাদ ব্যবস্থাপনা: [http://localhost:3010/admin/videos](http://localhost:3010/admin/videos)
+   - আমাদের পরিবার ব্যবস্থাপনা: [http://localhost:3010/admin/our-family](http://localhost:3010/admin/our-family)
+   - আমাদের পরিবার পাবলিক পেজ: [http://localhost:3010/our-family](http://localhost:3010/our-family)
+
+---
+
+## ১১. ভিডিও সংবাদ ব্যবস্থাপনা API (Facebook Video, Reels & YouTube)
+
+অ্যাডমিন প্যানেল থেকে ফেসবুক অফিসিয়াল পেজের ভিডিও, রিলস কিংবা ইউটিউব ভিডিও লিংক সরাসরি যুক্ত করার জন্য এই API ব্যবহৃত হয়।
+
+### ১১.১ ভিডিও তালিকা গ্রহণ (`GET /news/videos`)
+* **Endpoint:** `GET /news/videos`
+* **Query Parameters:**
+  * `limit`: সংখ্যা (ডিফল্ট ১০, সর্বোচ্চ ৫০)
+  * `category`: ঐচ্ছিক ফিল্টার (`"ভিডিও সংবাদ"`, `"টকশো"`, `"বিশেষ প্রতিবেদন"`, `"লাইভ"`)
+  * `platform`: ঐচ্ছিক (`"facebook"` | `"youtube"`)
+* **Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "vid-101",
+      "title": "সারাদেশের আজকের গুরুত্বপূর্ণ সংবাদ ও বিশেষ ভিডিও বুলেটিন",
+      "slug": "saradesher-ajker-video-bulletin",
+      "videoUrl": "https://www.facebook.com/BanglarAloNewsBD/videos/1234567890",
+      "platform": "facebook",
+      "thumbnail": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800",
+      "category": "ভিডিও সংবাদ",
+      "duration": "০৩:৪৫",
+      "viewsCount": 2450,
+      "publishedDate": "2026-11-25T10:30:00Z",
+      "summary": "বাংলার আলো নিউজ অফিসিয়াল ভিডিও বুলেটিন। দেশ ও বিদেশের তাজা খবর।",
+      "isFeatured": true
+    }
+  ],
+  "total": 1
+}
+```
+
+### ১১.২ নতুন ভিডিও সংবাদ সংরক্ষণ (`POST /news/videos`)
+* **Endpoint:** `POST /news/videos`
+* **Headers:** `Authorization: Bearer <token>`, `Content-Type: application/json`
+* **Request Body:**
+```json
+{
+  "title": "ভিডিও শিরোনাম",
+  "videoUrl": "https://www.facebook.com/watch/?v=123456789",
+  "thumbnail": "https://example.com/image.jpg",
+  "category": "ভিডিও সংবাদ",
+  "duration": "০২:৩০",
+  "viewsCount": 1250,
+  "summary": "ভিডিও সম্পর্কে সংক্ষিপ্ত বিবরণ",
+  "isFeatured": false
+}
+```
+
+### ১১.৩ ভিডিও আপডেট ও মুছে ফেলা
+* **আপডেট:** `PUT /news/videos/:id`
+* **মুছে ফেলা:** `DELETE /news/videos/:id`
+
+---
+
+## ১২. আমাদের পরিবার ব্যবস্থাপনা API (Our Family & Editorial Board)
+
+পত্রিকার সম্পাদকীয় পর্ষদ, বার্তা বিভাগ, বিভিন্ন ডেস্ক প্রধান, জেলা ও উপজেলা প্রতিনিধিদের তালিকা ডায়নামিকালি পরিচালনার জন্য এই API কাজ করে।
+
+### ১২.১ সদস্যদের তালিকা গ্রহণ (`GET /our-family`)
+* **Endpoint:** `GET /our-family`
+* **Query Parameters:**
+  * `category`: ঐচ্ছিক (`"editorial"` | `"desk"` | `"correspondent"` | `"management"`)
+  * `isActive`: boolean (ডিফল্ট `true`)
+* **Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "fam-1",
+      "name": "মোঃ গোলাম মাওলা শাওন",
+      "role": "প্রকাশক ও সম্পাদক",
+      "category": "editorial",
+      "categoryTitle": "সম্পাদকীয় ও পরিচালনা পর্ষদ",
+      "email": "banglaralonewsbd@gmail.com",
+      "phone": "০১৭১১-০০৬২১৪",
+      "photo": "",
+      "bio": "প্রতিষ্ঠাতা, প্রকাশক ও সম্পাদক, দৈনিক বাংলার আলো নিউজ।",
+      "order": 1,
+      "isActive": true
+    },
+    {
+      "id": "fam-4",
+      "name": "মো. কামরুল হাসান",
+      "role": "ডেস্ক প্রধান",
+      "category": "desk",
+      "categoryTitle": "জাতীয় ও রাজনীতি ডেস্ক",
+      "subMembers": "রিপন মিয়া, আরিফুল ইসলাম",
+      "email": "politics@banglaralonews.com",
+      "order": 4,
+      "isActive": true
+    }
+  ]
+}
+```
+
+### ১২.২ নতুন সদস্য যোগ (`POST /our-family`)
+* **Endpoint:** `POST /our-family`
+* **Headers:** `Authorization: Bearer <token>`, `Content-Type: application/json`
+* **Request Body:**
+```json
+{
+  "name": "সদস্যের নাম",
+  "role": "সহকারী বার্তা সম্পাদক",
+  "category": "editorial",
+  "categoryTitle": "সম্পাদকীয় ও পরিচালনা পর্ষদ",
+  "email": "editor@banglaralonewsbd.com",
+  "phone": "০১৭১১-০০০০০০",
+  "photo": "https://example.com/avatar.jpg",
+  "subMembers": "",
+  "bio": "সংক্ষিপ্ত পরিচিতি",
+  "order": 3,
+  "isActive": true
+}
+```
+
+### ১২.৩ সদস্য আপডেট ও অপসারণ
+* **আপডেট:** `PUT /our-family/:id`
+* **মুছে ফেলা:** `DELETE /our-family/:id`
+* **বাল্ক সিঙ্ক (ঐচ্ছিক):** `POST /our-family/sync`
+
+---
+
+## ১৩. ব্যানার বিজ্ঞাপন স্লট API (Banglar Alo IT & Ad Banners)
+
+ওয়েবসাইটে ডোমেইন-হোস্টিং ও সফটওয়্যার পার্টনার **Banglar Alo IT** ব্যানার বিজ্ঞাপন স্লট সক্রিয় রয়েছে:
+* **হোমপেজ টপ স্লট:** 'সর্বশেষ' (Latest) সেকশনের ঠিক উপরে লিডারবোর্ড ব্যানার (৯৭০x১২০ পিক্সেল)।
+* **হোমপেজ মিডল স্লট:** 'সর্বশেষ' ও 'সারাদেশ' সেকশনের মধ্যবর্তী স্থানে লিডারবোর্ড ব্যানার।
+
+ব্যাকএন্ড থেকে ব্যানার নিয়ন্ত্রণ করতে নিচের এন্ডপয়েন্ট ব্যবহার করা যাবে:
+* **`GET /ads/slots`**: সকল সক্রিয় স্লটের ব্যানার তথ্য পায়।
+* **`PUT /ads/slots/:slotId`**: নির্দিষ্ট স্লটে ব্যানার ইমেজ URL, রিডাইরেক্ট লিংক ও এক্সপায়ারি ডেট আপডেট করা যায়।
+

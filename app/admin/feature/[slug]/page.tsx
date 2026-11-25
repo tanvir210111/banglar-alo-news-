@@ -37,6 +37,8 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import ScrollToTop from "@/components/common/ScrollToTop";
 import AutoNewsManager from "@/components/admin/AutoNewsManager";
 import AudioNewsManager from "@/components/admin/AudioNewsManager";
+import VideoNewsManager from "@/components/admin/VideoNewsManager";
+import OurFamilyManager from "@/components/admin/OurFamilyManager";
 
 interface FeatureInfo {
   name: string;
@@ -465,6 +467,10 @@ export default function FeatureComingSoonPage() {
               <AutoNewsManager />
             ) : slug === "audio-news" ? (
               <AudioNewsManager />
+            ) : slug === "video-gallery" || slug === "videos" ? (
+              <VideoNewsManager />
+            ) : slug === "our-family" || slug === "team" ? (
+              <OurFamilyManager />
             ) : (
               /* Main Hero Card: Under Development / Upcoming Feature */
               <div className="bg-white rounded-2xl border border-[#D5E1F5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden mb-6">
