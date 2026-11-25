@@ -9,7 +9,6 @@ import PopularScrollSection from "@/components/news/PopularScrollSection";
 import DualCategorySection from "@/components/news/DualCategorySection";
 import AdvertisementPlaceholder from "@/components/news/AdvertisementPlaceholder";
 import HomeFacebookVideoSection from "@/components/news/HomeFacebookVideoSection";
-import BanglarAloItBanner from "@/components/news/BanglarAloItBanner";
 import FacebookPageWidget from "@/components/common/FacebookPageWidget";
 import BangladeshMapWidget from "@/components/news/BangladeshMapWidget";
 import RecentPopularTabWidget from "@/components/news/RecentPopularTabWidget";
@@ -525,7 +524,7 @@ export default function HomePageClient({
   return (
     <div className="space-y-8 pb-10">
       {/* 0. Banglar Alo IT Leaderboard Banner Ad (Above Latest / সর্বশেষ-এর উপরে) */}
-      <BanglarAloItBanner slotLabel={isBn ? "হোমপেজ টপ" : "Homepage Top"} />
+      <AdvertisementPlaceholder size="leaderboard" className="mt-1 mb-2" />
 
       {/* 1. Main Latest News Section (সর্বশেষ) */}
       <section className="bg-white rounded-lg border border-[#E2E6EB] shadow-xs p-4 sm:p-5">
@@ -612,7 +611,7 @@ export default function HomePageClient({
       <PopularScrollSection articles={popularList} />
 
       {/* 3.5 Banglar Alo IT Leaderboard Banner Ad (Between Latest & Countrywide / সর্বশেষ ও সারাদেশ-এর মাঝে) */}
-      <BanglarAloItBanner slotLabel={isBn ? "সারাদেশের আগে" : "Mid Banner"} />
+      <AdvertisementPlaceholder size="leaderboard" className="my-3" />
 
       {/* 4. Menubar Serial 2: সারাদেশ (Countrywide) - লেআউট + Right side: সর্বশেষ সংবাদ ও আলোচিত সংবাদ */}
       <section className="bg-white rounded-lg border border-[#E2E6EB] shadow-xs p-4 sm:p-5">
