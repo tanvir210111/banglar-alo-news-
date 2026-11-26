@@ -8,7 +8,7 @@ import AdvertisementPlaceholder from "@/components/news/AdvertisementPlaceholder
 import { Flame, ChevronRight, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "সর্বাধিক পঠিত সংবাদ | অর্থনীতি সংবাদ",
+  title: "সর্বাধিক পঠিত সংবাদ | বাংলার আলো নিউজ",
   description: "পাঠকদের পছন্দের শীর্ষে থাকা সর্বাধিক পঠিত ও আলোচিত সংবাদগুলো পড়ুন।",
 };
 

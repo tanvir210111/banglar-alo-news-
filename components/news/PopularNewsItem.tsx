@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { Article } from "@/types/news";
-import { Eye } from "lucide-react";
 
 interface PopularItemProps {
   article: Article;
@@ -35,12 +34,13 @@ export default function PopularNewsItem({ article, rank }: PopularItemProps) {
         </h4>
         <div className="flex items-center justify-between gap-2 mt-1 text-[11px] text-[#626B75]">
           <span className="text-[#087A43] font-medium">
-            {article.category.name}
+            {article.category?.name}
           </span>
-          <span className="flex items-center gap-1 text-gray-400">
-            <Eye className="w-3 h-3 text-[#0B7A43]" />
-            {article.viewsCount.toLocaleString("bn-BD")} বার পঠিত
-          </span>
+          {article.publishedAtBengali && (
+            <span className="text-gray-400">
+              {article.publishedAtBengali.split(",")[0]}
+            </span>
+          )}
         </div>
       </div>
     </article>
