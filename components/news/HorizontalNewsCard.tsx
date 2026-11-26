@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Article } from "@/types/news";
 import { Clock, User } from "lucide-react";
 import ShareButtons from "./ShareButtons";
+import { cleanNewsImageUrl } from "@/services/newsService";
 
 interface HorizontalCardProps {
   article: Article;
@@ -13,7 +14,7 @@ interface HorizontalCardProps {
 export default function HorizontalNewsCard({ article, compact = false }: HorizontalCardProps) {
   if (!article) return null;
   const rawImg = typeof article.featuredImage === "string" ? article.featuredImage : article.featuredImage?.url;
-  const imgUrl = !rawImg || rawImg.includes("unsplash.com") ? "/images/news-placeholder.svg" : rawImg;
+  const imgUrl = !rawImg || rawImg.includes("unsplash.com") ? "/images/news-placeholder.svg" : cleanNewsImageUrl(rawImg);
   return (
     <article className="bg-white rounded-lg border border-[#E2E6EB] hover:border-[#0B7A43]/30 hover:shadow-xs transition-all overflow-hidden p-3 flex gap-3 sm:gap-4 group">
       {/* Thumbnail */}

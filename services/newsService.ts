@@ -48,11 +48,58 @@ export function formatToEnglishDate(isoDateString?: string): string {
   }
 }
 
+export function getBackendRootUrl(): string {
+  const envUrl =
+    process.env.BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://api.banglaralonews.com/api/v1";
+
+  // If local development environment, old news images are hosted on the live backend
+  if (envUrl.includes("localhost") || envUrl.includes("127.0.0.1")) {
+    return "https://api.banglaralonews.com";
+  }
+
+  const root = envUrl.replace(/\/api\/v1\/?$/i, "").replace(/\/+$/, "");
+  return root || "https://api.banglaralonews.com";
+}
+
 // Remove watermarks, external logos, overlays (e.g. Prothom Alo / Quintype / Imgix watermarks)
+// and dynamically resolve archive/old news images
 export function cleanNewsImageUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
   try {
     let raw = url.replace(/&amp;/g, "&").trim();
+
+    // 1. Dynamic Archive / Old News Image Resolution
+    // Supports https://api.banglaralonews.com/old_news_images/5554666_6b04667918981.jpg
+    const backendRoot = getBackendRootUrl();
+
+    if (raw.includes("old_news_images/")) {
+      const filename = raw.split("old_news_images/").pop()?.replace(/^\/+/, "");
+      if (filename) {
+        return `${backendRoot}/old_news_images/${filename}`;
+      }
+    }
+
+    if (raw.startsWith("/old_news_images/")) {
+      return `${backendRoot}${raw}`;
+    }
+
+    // Bare image filename without protocol (typical for old/archive database rows, e.g. 5554666_6b04667918981.jpg)
+    if (
+      !raw.startsWith("http://") &&
+      !raw.startsWith("https://") &&
+      !raw.startsWith("data:") &&
+      !raw.startsWith("/images/") &&
+      !raw.startsWith("/fonts/") &&
+      !raw.startsWith("/icons/") &&
+      /\.(jpg|jpeg|png|webp|gif|avif|bmp)(\?.*)?$/i.test(raw)
+    ) {
+      const filename = raw.replace(/^\/+/, "");
+      if (!filename.includes("/")) {
+        return `${backendRoot}/old_news_images/${filename}`;
+      }
+    }
     // Normalize encoded slashes in pathname (e.g. media.prothomalo.com/prothomalo-bangla%2F...)
     if (raw.includes("%2F") || raw.includes("%2f")) {
       try {
@@ -216,6 +263,17 @@ export function mapBackendNewsToArticle(item: any): Article {
         : item.leadImage?.url?.trim() || "";
   }
 
+  // Fallbacks for archive / old news backend formats (image, thumbnail, img, old_image, etc.)
+  if (!featuredImageUrl) {
+    featuredImageUrl =
+      (typeof item.image === "string" ? item.image.trim() : item.image?.url?.trim()) ||
+      (typeof item.thumbnail === "string" ? item.thumbnail.trim() : item.thumbnail?.url?.trim()) ||
+      (typeof item.img === "string" ? item.img.trim() : item.img?.url?.trim()) ||
+      (typeof item.photo === "string" ? item.photo.trim() : item.photo?.url?.trim()) ||
+      (typeof item.old_news_image === "string" ? item.old_news_image.trim() : "") ||
+      "";
+  }
+
   // Check known article images cache
   if ((!featuredImageUrl || featuredImageUrl.includes("unsplash.com")) && (KNOWN_ARTICLE_IMAGES[itemId] || KNOWN_ARTICLE_IMAGES[itemSlug])) {
     featuredImageUrl = KNOWN_ARTICLE_IMAGES[itemId] || KNOWN_ARTICLE_IMAGES[itemSlug];
@@ -262,6 +320,14 @@ export function mapBackendNewsToArticle(item: any): Article {
   const rawCredit = (item.photoCredit || item.leadImagePhotographer || "").trim();
   const cleanPhotoCredit = rawCredit ? rawCredit.replace(/^ছবি\s*:\s*/i, "").trim() : "";
 
+  let cleanContent = item.content || [];
+  if (typeof cleanContent === "string") {
+    cleanContent = cleanContent.replace(
+      /(<img[^>]+src=["'])(?:https?:\/\/[^/"'\s]+)?\/?old_news_images\/([^"'\s]+)(["'][^>]*>)/gi,
+      (_match, p1, filename, p3) => `${p1}${cleanNewsImageUrl(`old_news_images/${filename}`)}${p3}`
+    );
+  }
+
   return {
     id: String(item.id || item._id),
     title: item.title || "",
@@ -271,7 +337,7 @@ export function mapBackendNewsToArticle(item: any): Article {
     slug: item.slug || String(item.id),
     summary: rawSummary,
     summaryEn: item.summaryEn || rawSummary,
-    content: item.content || [],
+    content: cleanContent,
     contentEn: item.contentEn || "",
     category,
     author,

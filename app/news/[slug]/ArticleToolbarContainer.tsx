@@ -105,6 +105,12 @@ export default function ArticleToolbarContainer({
   // Clean body to prevent duplicate image rendering if the featured image was also in the body HTML
   let cleanedBodyHtml = typeof contentBlocks === "string" ? contentBlocks : "";
   if (cleanedBodyHtml) {
+    // Dynamically resolve any old archive images inside the body HTML
+    cleanedBodyHtml = cleanedBodyHtml.replace(
+      /(<img[^>]+src=["'])(?:https?:\/\/[^/"'\s]+)?\/?old_news_images\/([^"'\s]+)(["'][^>]*>)/gi,
+      (_match, p1, filename, p3) => `${p1}${cleanNewsImageUrl(`old_news_images/${filename}`)}${p3}`
+    );
+
     // Strip pasted background-color and background styling so text background remains clean & transparent
     cleanedBodyHtml = cleanedBodyHtml
       .replace(/background-color\s*:\s*[^;"]+;?/gi, "")

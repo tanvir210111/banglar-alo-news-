@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Clock, Flame, Sparkles } from "lucide-react";
 import { Article } from "@/types/news";
 import { useLanguage } from "@/context/LanguageContext";
+import { cleanNewsImageUrl } from "@/services/newsService";
 
 interface RecentPopularTabWidgetProps {
   specialArticles?: Article[];
@@ -23,8 +24,11 @@ export default function RecentPopularTabWidget({
 
   const getImg = (img: any): string => {
     if (!img) return "/images/placeholder.svg";
-    if (typeof img === "string") return img.trim() ? img : "/images/placeholder.svg";
-    return img.url?.trim() ? img.url : "/images/placeholder.svg";
+    let url = "";
+    if (typeof img === "string") url = img.trim();
+    else if (img.url) url = img.url.trim();
+    if (!url || url.includes("unsplash.com")) return "/images/placeholder.svg";
+    return cleanNewsImageUrl(url);
   };
 
   const getArtTitle = (art: Article) => (isBn ? art.title : art.titleEn || art.title);
@@ -41,11 +45,10 @@ export default function RecentPopularTabWidget({
         <button
           type="button"
           onClick={() => setActiveTab("special")}
-          className={`flex-1 py-2 px-3 text-center text-sm sm:text-[15px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-            activeTab === "special"
-              ? "bg-[#0B7A43] text-white shadow-xs"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
+          className={`flex-1 py-2 px-3 text-center text-sm sm:text-[15px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeTab === "special"
+            ? "bg-[#0B7A43] text-white shadow-xs"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
         >
           <Sparkles className="w-4 h-4 text-yellow-300" />
           <span>{isBn ? "বাংলার আলো স্পেশাল" : "Banglar Alo Special"}</span>
@@ -54,11 +57,10 @@ export default function RecentPopularTabWidget({
         <button
           type="button"
           onClick={() => setActiveTab("popular")}
-          className={`flex-1 py-2 px-3 text-center text-sm sm:text-[15px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-            activeTab === "popular"
-              ? "bg-[#bd0202] text-white shadow-xs"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
+          className={`flex-1 py-2 px-3 text-center text-sm sm:text-[15px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeTab === "popular"
+            ? "bg-[#bd0202] text-white shadow-xs"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
         >
           <Flame className="w-4 h-4 text-orange-200" />
           <span>{isBn ? "আলোচিত সংবাদ" : "Featured News"}</span>
@@ -75,13 +77,12 @@ export default function RecentPopularTabWidget({
             >
               {/* Circular Numbering Badge (.conut) */}
               <div
-                className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-xs mt-0.5 ${
-                  idx === 0
-                    ? "bg-[#bd0202]"
-                    : idx === 1
+                className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-xs mt-0.5 ${idx === 0
+                  ? "bg-[#bd0202]"
+                  : idx === 1
                     ? "bg-[#0B7A43]"
                     : "bg-gray-700"
-                }`}
+                  }`}
               >
                 {isBn ? BN_NUMBERS[idx] || idx + 1 : idx + 1}
               </div>

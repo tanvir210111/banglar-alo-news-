@@ -10,6 +10,7 @@ import {
   getLatestArticles,
   getPopularArticles,
   mapBackendNewsToArticle,
+  cleanNewsImageUrl,
 } from "@/services/newsService";
 import { Article } from "@/types/news";
 import ArticleToolbarContainer from "./ArticleToolbarContainer";
@@ -114,7 +115,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
     else if (art.featuredImage?.url) url = art.featuredImage.url;
     else if (typeof art.image === "string") url = art.image;
     if (!url || url.includes("unsplash.com")) return "/images/news-placeholder.svg";
-    return url;
+    return cleanNewsImageUrl(url);
   };
 
   const articleSubtitle =

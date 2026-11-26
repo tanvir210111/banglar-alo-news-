@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Article, Category } from "@/types/news";
 import { ChevronRight, Clock } from "lucide-react";
 import { useLanguage, CATEGORY_NAME_EN } from "@/context/LanguageContext";
+import { cleanNewsImageUrl } from "@/services/newsService";
 
 const getImg = (img: any): string => {
   let url = "";
@@ -14,7 +15,7 @@ const getImg = (img: any): string => {
   if (!url || url.includes("unsplash.com")) {
     return "/images/news-placeholder.svg";
   }
-  return url;
+  return cleanNewsImageUrl(url);
 };
 
 interface CategorySectionProps {

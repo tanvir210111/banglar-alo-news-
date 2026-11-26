@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Article } from "@/types/news";
 import { Clock, User, Flame } from "lucide-react";
 import ShareButtons from "./ShareButtons";
+import { cleanNewsImageUrl } from "@/services/newsService";
 
 interface LeadCardProps {
   article: Article;
@@ -24,7 +25,7 @@ export default function LeadNewsCard({ article, priority = true }: LeadCardProps
       : article.featuredImage?.url;
   
   const [imgSrc, setImgSrc] = useState<string>(
-    rawImg && rawImg.trim() !== "" && !rawImg.includes("unsplash.com") ? rawImg : DEFAULT_FALLBACK_IMAGE
+    rawImg && rawImg.trim() !== "" && !rawImg.includes("unsplash.com") ? cleanNewsImageUrl(rawImg) : DEFAULT_FALLBACK_IMAGE
   );
 
   // 2. Safe Category resolution

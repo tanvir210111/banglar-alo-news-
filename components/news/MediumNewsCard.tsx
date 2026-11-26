@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Article } from "@/types/news";
 import { Clock } from "lucide-react";
 import ShareButtons from "./ShareButtons";
+import { cleanNewsImageUrl } from "@/services/newsService";
 
 interface MediumCardProps {
   article: Article;
@@ -13,7 +14,7 @@ interface MediumCardProps {
 export default function MediumNewsCard({ article, showCategory = true }: MediumCardProps) {
   if (!article) return null;
   const rawImg = typeof article.featuredImage === "string" ? article.featuredImage : article.featuredImage?.url;
-  const imgUrl = !rawImg || rawImg.includes("unsplash.com") ? "/images/news-placeholder.svg" : rawImg;
+  const imgUrl = !rawImg || rawImg.includes("unsplash.com") ? "/images/news-placeholder.svg" : cleanNewsImageUrl(rawImg);
   return (
     <article className="bg-white rounded-lg border border-[#E2E6EB] shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full group">
       {/* Image */}
