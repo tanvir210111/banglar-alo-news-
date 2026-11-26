@@ -411,7 +411,7 @@ export const FALLBACK_CATEGORIES: Category[] = [
   { id: "6adf06f9edbce197278ace70", name: "বিনোদন", slug: "entertainment", order: 9, isMain: true },
   { id: "6ae1d5cf586845309f505418", name: "দুর্ঘটনা", slug: "accident", order: 10, isMain: false },
   { id: "6adf070cedbce197278ace79", name: "রাজধানী", slug: "capital", order: 11, isMain: false },
-  { id: "6ae1d5d4586845309f50541e", name: "নারী ও শিশু", slug: "women-and-children", order: 12, isMain: false },
+  { id: "6ae1d5d4586845309f50541e", name: "শোক", slug: "shok", order: 12, isMain: false },
   { id: "6adf0708edbce197278ace77", name: "ইসলাম", slug: "islam", order: 13, isMain: false },
   { id: "6adf06fdedbce197278ace72", name: "প্রযুক্তি", slug: "technology", order: 14, isMain: false },
   { id: "6ae1d5d1586845309f50541a", name: "কৃষি", slug: "agriculture", order: 15, isMain: false },
@@ -444,6 +444,23 @@ export async function getCategories(): Promise<Category[]> {
           name = "দুর্ঘটনা";
           slug = "accident";
           description = "দুর্ঘটনা ও উদ্ধার তৎপরতার সর্বশেষ সংবাদ";
+        }
+
+        // If backend returns 'নারী ও শিশু', rename to 'শোক'
+        if (
+          slug === "women-and-children" ||
+          slug === "nari-o-shishu" ||
+          name === "নারী ও শিশু" ||
+          String(c.id || c._id) === "6ae1d5d4586845309f50541e"
+        ) {
+          name = "শোক";
+          slug = "shok";
+          description = "শোক সংবাদ ও স্মৃতিচারণ";
+        }
+
+        // Do not include 'সর্বশেষ' in categories list as it is a special feed page
+        if (slug === "latest" || slug === "sorbosesh" || name === "সর্বশেষ") {
+          continue;
         }
 
         const rawOrder = c.order !== undefined ? c.order : c.orderIndex;

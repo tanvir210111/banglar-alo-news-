@@ -487,11 +487,11 @@ export default function HomePageClient({
         seenIds.add(a.id);
         if (a.slug) seenSlugs.add(a.slug);
         list.push(a);
-        if (list.length >= 12) break;
+        if (list.length >= 15) break;
       }
     }
 
-    if (list.length < 12) {
+    if (list.length < 15) {
       const candidates = [
         ...liveLatest,
         ...popularArticles,
@@ -511,7 +511,7 @@ export default function HomePageClient({
         if (!seenIds.has(a.id)) {
           seenIds.add(a.id);
           list.push(a);
-          if (list.length >= 12) break;
+          if (list.length >= 15) break;
         }
       }
     }
@@ -602,6 +602,11 @@ export default function HomePageClient({
             {/* 2. Bangladesh Map Widget with Division, District, Upazila Borders & Selectors */}
             <div className="w-full">
               <BangladeshMapWidget />
+            </div>
+
+            {/* 3. Sidebar Advertisement beneath Map Widget */}
+            <div className="w-full mt-1">
+              <AdvertisementPlaceholder size="sidebar" className="w-full" />
             </div>
           </div>
         </div>

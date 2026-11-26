@@ -188,7 +188,7 @@ export default function Footer() {
             {/* অফিস / প্রধান কার্যালয় */}
             <div className="border-t border-gray-700/60 pt-3">
               <h4 className="text-[13px] font-bold text-white uppercase tracking-wider border-l-2 border-[#DC2626] pl-2 mb-2 flex items-center gap-1.5">
-                {isBn ? "প্রধান কার্যালয় (অফিস)" : "Head Office"}
+                {isBn ? "প্রধান কার্যালয়" : "Head Office"}
               </h4>
               <div className="space-y-1.5 pl-2.5">
                 <p className="flex items-start gap-2 text-gray-300 leading-relaxed">
@@ -215,11 +215,11 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Credit */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-3">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-3 pr-2 sm:pr-12 md:pr-16">
           <p className="text-center sm:text-left leading-relaxed">
             © {currentYear} <strong className="text-gray-200">{isBn ? "বাংলার আলো নিউজ" : "Banglar Alo News"}</strong>. {isBn ? "সর্বস্বত্ব সংরক্ষিত। অনুমতি ছাড়া এই ওয়েবসাইটের কোনো লেখা বা ছবি প্রকাশ দণ্ডনীয় অপরাধ।" : "All rights reserved. Reproduction of any content without permission is prohibited."}
           </p>
-          <p className="text-center sm:text-right shrink-0">
+          <p className="text-center sm:text-left shrink-0">
             {isBn ? "কারিগরি সহযোগিতায়" : "Technical Support by"}:{" "}
             <a
               href="https://banglaraloit.com"

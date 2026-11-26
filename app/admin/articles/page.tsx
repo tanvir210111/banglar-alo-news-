@@ -89,6 +89,10 @@ function ArticlesListContent() {
     return 75;
   });
 
+  const [breakingCount, setBreakingCount] = useState<number>(0);
+  const [specialCount, setSpecialCount] = useState<number>(0);
+  const [draftCount, setDraftCount] = useState<number>(0);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -185,6 +189,20 @@ function ArticlesListContent() {
     getCategories().then((cats) => {
       if (cats && cats.length > 0) setDbCategories(cats);
     });
+
+    // Fetch dynamic live counts for Breaking News, Special, and Drafts
+    api.get<any[]>("/news?limit=1&isBreaking=true").then((res) => {
+      if (typeof res?.meta?.total === "number") setBreakingCount(res.meta.total);
+    }).catch(() => {});
+
+    api.get<any[]>("/news?limit=1&isFeatured=true").then((res) => {
+      if (typeof res?.meta?.total === "number") setSpecialCount(res.meta.total);
+    }).catch(() => {});
+
+    api.get<any[]>("/news/drafts?limit=1").then((res) => {
+      const total = typeof res?.meta?.total === "number" ? res.meta.total : (Array.isArray(res?.data) ? res.data.length : 0);
+      setDraftCount(total);
+    }).catch(() => {});
   }, [statusParam, filterParam, currentPage, pageSize, selectedCategory]);
 
   // Real-time synchronization when a new article is published from anywhere
@@ -253,11 +271,11 @@ function ArticlesListContent() {
     return {
       all: realTotal,
       published: realPublished,
-      draft,
-      breaking: breaking > 0 ? breaking : Math.max(realTotal - 1, 0),
-      special: Math.max(special, 4),
+      draft: draftCount > 0 ? draftCount : draft,
+      breaking: breakingCount > 0 ? breakingCount : breaking,
+      special: specialCount > 0 ? specialCount : special,
     };
-  }, [articles, totalCount, publishedCount]);
+  }, [articles, totalCount, publishedCount, draftCount, breakingCount, specialCount]);
 
   // 1-Click Instant Toggle Breaking News (0ms optimistic update without page reload)
   const handleToggleBreaking = async (id: string, currentlyBreaking: boolean) => {
@@ -266,6 +284,7 @@ function ArticlesListContent() {
     setArticles((prev) =>
       prev.map((a) => (a.id === id ? { ...a, isBreaking: nextState } : a))
     );
+    setBreakingCount((prev) => (nextState ? prev + 1 : Math.max(0, prev - 1)));
     showToast(
       nextState
         ? "সংবাদটি ব্রেকিং নিউজে যুক্ত করা হয়েছে!"
@@ -281,26 +300,29 @@ function ArticlesListContent() {
         setArticles((prev) =>
           prev.map((a) => (a.id === id ? { ...a, isBreaking: currentlyBreaking } : a))
         );
+        setBreakingCount((prev) => (currentlyBreaking ? prev + 1 : Math.max(0, prev - 1)));
         showToast(res?.message || "ব্রেকিং স্ট্যাটাস পরিবর্তন করা সম্ভব হয়নি");
       }
     } catch {
       setArticles((prev) =>
         prev.map((a) => (a.id === id ? { ...a, isBreaking: currentlyBreaking } : a))
       );
+      setBreakingCount((prev) => (currentlyBreaking ? prev + 1 : Math.max(0, prev - 1)));
       showToast("ব্রেকিং স্ট্যাটাস পরিবর্তন করা সম্ভব হয়নি");
     }
   };
 
-  // 1-Click Instant Toggle Banglar Alo Special News (0ms optimistic update without page reload)
+  // 1-Click Instant Toggle Banglar Alo News Special News (0ms optimistic update without page reload)
   const handleToggleSpecial = async (id: string, currentlySpecial: boolean) => {
     const nextState = !currentlySpecial;
     // 1. Instant 0ms state change
     setArticles((prev) =>
       prev.map((a) => (a.id === id ? { ...a, isFeatured: nextState } : a))
     );
+    setSpecialCount((prev) => (nextState ? prev + 1 : Math.max(0, prev - 1)));
     showToast(
       nextState
-        ? "সংবাদটি 'বাংলার আলো স্পেশাল'-এ যুক্ত করা হয়েছে!"
+        ? "সংবাদটি 'বাংলার আলো নিউজ স্পেশাল'-এ যুক্ত করা হয়েছে!"
         : "সংবাদটি স্পেশাল থেকে সরানো হয়েছে"
     );
     broadcastNewsUpdate();
@@ -309,16 +331,19 @@ function ArticlesListContent() {
     try {
       const res = await api.patch(`/news/${id}`, { isFeatured: nextState });
       if (!res?.success) {
+        // Try special-toggle endpoint as fallback
+        await api.patch(`/news/${id}/special-toggle`);
+      }
+    } catch {
+      try {
+        await api.patch(`/news/${id}/special-toggle`);
+      } catch {
         setArticles((prev) =>
           prev.map((a) => (a.id === id ? { ...a, isFeatured: currentlySpecial } : a))
         );
-        showToast(res?.message || "স্পেশাল স্ট্যাটাস পরিবর্তন করা সম্ভব হয়নি");
+        setSpecialCount((prev) => (currentlySpecial ? prev + 1 : Math.max(0, prev - 1)));
+        showToast("স্পেশাল স্ট্যাটাস পরিবর্তন করা সম্ভব হয়নি");
       }
-    } catch {
-      setArticles((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, isFeatured: currentlySpecial } : a))
-      );
-      showToast("স্পেশাল স্ট্যাটাস পরিবর্তন করা সম্ভব হয়নি");
     }
   };
 
@@ -487,10 +512,13 @@ function ArticlesListContent() {
 
   const paginatedArticles = useMemo(() => {
     if (pageSize === 0) return filteredArticles;
-    if (filteredArticles.length <= pageSize) return filteredArticles;
+    // If backend already provided a server-paginated slice of data (e.g. 25 items for page 2)
+    if (totalCount > filteredArticles.length && filteredArticles.length <= pageSize) {
+      return filteredArticles;
+    }
     const start = (currentPage - 1) * pageSize;
     return filteredArticles.slice(start, start + pageSize);
-  }, [filteredArticles, currentPage, pageSize]);
+  }, [filteredArticles, currentPage, pageSize, totalCount]);
 
   const totalPages = useMemo(() => {
     if (pageSize === 0) return 1;
@@ -542,7 +570,7 @@ function ArticlesListContent() {
                 {filterParam === "breaking"
                   ? "Breaking News (সকল ব্রেকিং সংবাদ)"
                   : filterParam === "special"
-                    ? "Banglar Alo Special (বাংলার আলো স্পেশাল সংবাদ)"
+                    ? "Banglar Alo News Special (বাংলার আলো নিউজ স্পেশাল সংবাদ)"
                     : statusParam === "DRAFT"
                       ? "Draft Articles (ড্রাফট সংবাদ)"
                       : statusParam === "PUBLISHED"
@@ -638,7 +666,7 @@ function ArticlesListContent() {
               </span>
             </Link>
 
-            {/* Banglar Alo Special Filter Tab */}
+            {/* Banglar Alo News Special Filter Tab */}
             <Link
               href="/admin/articles?filter=special"
               className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${filterParam === "special"
@@ -646,7 +674,7 @@ function ArticlesListContent() {
                   : "bg-white text-amber-700 hover:bg-amber-50 border border-amber-200"
                 }`}
             >
-              <span>⭐ Banglar Alo Special</span>
+              <span>⭐ Banglar Alo News Special</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${filterParam === "special"
                     ? "bg-white/25 text-white"
@@ -738,7 +766,19 @@ function ArticlesListContent() {
                   ) : filteredArticles.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-12 text-center text-gray-500">
-                        কোনো সংবাদ পাওয়া যায়নি।
+                        {filterParam === "breaking" ? (
+                          <div className="py-2">
+                            <p className="font-semibold text-gray-700 text-sm mb-1">কোনো ব্রেকিং সংবাদ পাওয়া যায়নি</p>
+                            <p className="text-xs text-gray-500">সকল সংবাদের তালিকা থেকে যেকোনো সংবাদের পাশে 🚨 বাটনে ক্লিক করে তাৎক্ষণিক ব্রেকিং নিউজে যুক্ত করুন।</p>
+                          </div>
+                        ) : filterParam === "special" ? (
+                          <div className="py-2">
+                            <p className="font-semibold text-gray-700 text-sm mb-1">কোনো &apos;বাংলার আলো নিউজ স্পেশাল&apos; সংবাদ পাওয়া যায়নি</p>
+                            <p className="text-xs text-gray-500">সকল সংবাদের তালিকা থেকে যেকোনো সংবাদের পাশে ⭐ বাটনে ক্লিক করে স্পেশালে যুক্ত করুন।</p>
+                          </div>
+                        ) : (
+                          "কোনো সংবাদ পাওয়া যায়নি।"
+                        )}
                       </td>
                     </tr>
                   ) : (
@@ -899,7 +939,7 @@ function ArticlesListContent() {
                               <button
                                 type="button"
                                 onClick={() => handleToggleSpecial(article.id, Boolean(article.isFeatured))}
-                                title={article.isFeatured ? "স্পেশাল থেকে সরান" : "বাংলার আলো স্পেশাল করুন"}
+                                title={article.isFeatured ? "স্পেশাল থেকে সরান" : "বাংলার আলো নিউজ স্পেশাল করুন"}
                                 className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer shadow-2xs ${article.isFeatured
                                     ? "bg-amber-500 text-white border-amber-600 hover:bg-amber-600"
                                     : "bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200"

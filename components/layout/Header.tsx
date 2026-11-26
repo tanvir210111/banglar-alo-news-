@@ -205,7 +205,7 @@ export default function Header() {
       { name: isBn ? "শেয়ার বাজার" : "Share Market", href: "/category/share-market", slug: "share-market" },
       { name: isBn ? "প্রবাসে বাংলাদেশ" : "Expatriate Bangladesh", href: "/category/expatriate", slug: "expatriate" },
       { name: isBn ? "রাজধানী" : "Capital", href: "/category/capital", slug: "capital" },
-      { name: isBn ? "নারী ও শিশু" : "Women & Children", href: "/category/women-and-children", slug: "women-and-children" },
+      { name: isBn ? "শোক" : "Obituary", href: "/category/shok", slug: "shok" },
       { name: isBn ? "প্রযুক্তি" : "Technology", href: "/category/technology", slug: "technology" },
     ];
 
@@ -214,6 +214,11 @@ export default function Header() {
       const extraCats = drawerCategories.filter(
         (c) =>
           !existingSlugs.has(c.slug) &&
+          c.slug !== "latest" &&
+          c.slug !== "sorbosesh" &&
+          c.slug !== "women-and-children" &&
+          c.name !== "সর্বশেষ" &&
+          c.name !== "নারী ও শিশু" &&
           c.slug !== "education-culture" &&
           c.name !== "শিক্ষা ও সংস্কৃতি"
       );

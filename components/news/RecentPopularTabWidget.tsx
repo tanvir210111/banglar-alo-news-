@@ -40,7 +40,7 @@ export default function RecentPopularTabWidget({
 
   return (
     <div className="bg-white rounded-lg border border-[#E2E6EB] shadow-xs p-3.5 sm:p-4">
-      {/* Tab Headers - বাংলার আলো স্পেশাল ও আলোচিত সংবাদ */}
+      {/* Tab Headers - বাংলার আলো নিউজ স্পেশাল ও আলোচিত সংবাদ */}
       <div className="flex items-center border-b-2 border-[#0B7A43] mb-3">
         <button
           type="button"
@@ -51,7 +51,7 @@ export default function RecentPopularTabWidget({
             }`}
         >
           <Sparkles className="w-4 h-4 text-yellow-300" />
-          <span>{isBn ? "বাংলার আলো স্পেশাল" : "Banglar Alo Special"}</span>
+          <span>{isBn ? "বাংলার আলো নিউজ স্পেশাল" : "Banglar Alo News Special"}</span>
         </button>
 
         <button

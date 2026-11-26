@@ -2189,15 +2189,15 @@ function NewArticleContent() {
                       </button>
                     </div>
 
-                    {/* বাংলার আলো স্পেশাল (Banglar Alo Special) */}
+                    {/* বাংলার আলো নিউজ স্পেশাল (Banglar Alo News Special) */}
                     <div className="flex items-center justify-between p-2.5 rounded-md bg-emerald-50/80 border border-emerald-200 shadow-2xs">
                       <div>
                         <span className="text-[13px] font-bold text-emerald-950 flex items-center gap-1.5">
                           <Sparkles className="w-4 h-4 text-[#0B7A43] fill-[#0B7A43]/20" />
-                          <span>বাংলার আলো স্পেশাল</span>
+                          <span>বাংলার আলো নিউজ স্পেশাল</span>
                         </span>
                         <p className="text-[11px] text-emerald-800/80 mt-0.5">
-                          হোমপেজের &apos;বাংলার আলো স্পেশাল&apos; তালিকায় স্থান পাবে
+                          হোমপেজের &apos;বাংলার আলো নিউজ স্পেশাল&apos; তালিকায় স্থান পাবে
                         </p>
                       </div>
                       <button
