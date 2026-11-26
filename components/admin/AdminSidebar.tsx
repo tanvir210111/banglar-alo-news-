@@ -169,6 +169,7 @@ export default function AdminSidebar({
               { label: "Breaking News", href: "/admin/articles?filter=breaking" },
               { label: "Banglar Alo News Special", href: "/admin/articles?filter=special" },
               { label: "Category", href: "/admin/categories" },
+              { label: "Archive", href: "/admin/archive" },
             ])}
         </div>
 
