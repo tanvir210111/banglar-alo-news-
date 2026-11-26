@@ -10,6 +10,7 @@ import {
   getGalleryItems,
   getVideoItems,
   mapBackendNewsToArticle,
+  formatToBengaliDate,
 } from "@/services/newsService";
 import { Article } from "@/types/news";
 import HomePageClient from "@/components/home/HomePageClient";
@@ -49,14 +50,22 @@ export default async function HomePage() {
     getVideoItems(),
   ]);
 
-  // Extract from aggregated /news/home response
-  const leadArticle: Article = homeData?.leadNews
-    ? mapBackendNewsToArticle(homeData.leadNews)
+  // Extract from aggregated /news/home response (Section 5 of API Guide)
+  const leadArticleRaw = homeData?.leadArticle || homeData?.leadNews;
+  const leadArticle: Article = leadArticleRaw
+    ? mapBackendNewsToArticle(leadArticleRaw)
     : (freshAllNews[0] || additionalLatest[0]);
 
+  // Featured / Sublead articles from homeData or query
+  const homeFeaturedRaw = homeData?.featuredArticles || homeData?.subLeadNews;
+  const resolvedFeatured: Article[] =
+    Array.isArray(homeFeaturedRaw) && homeFeaturedRaw.length > 0
+      ? homeFeaturedRaw.map(mapBackendNewsToArticle)
+      : featuredArticles;
+
   const homeDataLatest =
-    homeData?.latestNews && Array.isArray(homeData.latestNews) && homeData.latestNews.length > 0
-      ? homeData.latestNews.map(mapBackendNewsToArticle)
+    (homeData?.latestArticles || homeData?.latestNews) && Array.isArray(homeData?.latestArticles || homeData?.latestNews)
+      ? (homeData.latestArticles || homeData.latestNews).map(mapBackendNewsToArticle)
       : [];
   const latestMap = new Map<string, Article>();
 
@@ -96,35 +105,35 @@ export default async function HomePage() {
     (a, b) => new Date(b.publishedAt || b.createdAt || 0).getTime() - new Date(a.publishedAt || a.createdAt || 0).getTime()
   );
 
+  const homePopularRaw = homeData?.popularArticles || homeData?.mostReadNews;
   const popularArticles: Article[] =
-    homeData?.mostReadNews && Array.isArray(homeData.mostReadNews) && homeData.mostReadNews.length > 0
-      ? homeData.mostReadNews.map(mapBackendNewsToArticle)
+    Array.isArray(homePopularRaw) && homePopularRaw.length > 0
+      ? homePopularRaw.map(mapBackendNewsToArticle)
       : latestArticles.slice(0, 8);
 
-  // Filter videoItems to strictly genuine videos (no ABCDE or dummy items)
+  // Filter videoItems to strictly genuine videos (supporting Facebook, YouTube & backend schema)
+  const homeVideoList = homeData?.videoItems || homeData?.videoNews || [];
   const apiHomeVideos =
-    homeData?.videoNews && Array.isArray(homeData.videoNews) && homeData.videoNews.length > 0
-      ? homeData.videoNews
-          .filter(
-            (v: any) =>
-              v.youtubeLink &&
-              !v.youtubeLink.includes("ABCDE") &&
-              v.youtubeLink.trim().length > 10
-          )
+    Array.isArray(homeVideoList) && homeVideoList.length > 0
+      ? homeVideoList
+          .filter((v: any) => {
+            const url = v.videoUrl || v.facebookLink || v.youtubeLink || v.link || "";
+            return url && !url.includes("ABCDE") && url.trim().length > 5;
+          })
           .map((v: any) => ({
             id: String(v.id || v._id),
             title: v.title,
             titleEn: v.titleEn || v.title,
-            slug: v.slug,
-            videoUrl: v.youtubeLink,
+            slug: v.slug || `video-${v.id || v._id}`,
+            videoUrl: v.videoUrl || v.facebookLink || v.youtubeLink || v.link || "",
             thumbnail:
               typeof v.featuredImage === "string"
                 ? v.featuredImage
-                : v.featuredImage?.url || "",
-            duration: "ভিডিও",
-            category: v.category?.name || "ভিডিও",
-            views: v.viewsCount || 0,
-            date: "আজ",
+                : v.featuredImage?.url || v.thumbnail || "",
+            duration: v.duration || "ভিডিও",
+            category: v.category?.name || v.category || "ভিডিও",
+            views: v.viewsCount || v.views || 0,
+            date: v.publishedDate ? formatToBengaliDate(v.publishedDate) : "আজ",
             summary: v.summary || v.title,
           }))
       : [];
@@ -140,28 +149,56 @@ export default async function HomePage() {
     }
   }
 
-  // Extract category articles from /news/home categoryBlocks & dedicated arrays
+  // Extract category articles from /news/home categoryBlocks & dedicated arrays (Section 5)
   const catBlocks = homeData?.categoryBlocks || homeData?.categorySections || [];
   const getCatArticles = (slug: string): Article[] => {
     const target = slug.toLowerCase();
 
-    // 1. Dedicated arrays from backend /news/home & fresh pre-fetches
-    if (target === "economy") {
-      const fromHome =
-        homeData?.economyArticles && Array.isArray(homeData.economyArticles) && homeData.economyArticles.length > 0
-          ? homeData.economyArticles.map(mapBackendNewsToArticle)
-          : [];
-      if (fromHome.length > 0) return fromHome;
-      if (freshEconomyArticles && freshEconomyArticles.length > 0) return freshEconomyArticles;
+    // 1. Direct arrays from backend GET /api/v1/news/home (Section 5)
+    if ((target === "countrywide" || target === "saradesh") && Array.isArray(homeData?.saradeshArticles) && homeData.saradeshArticles.length > 0) {
+      return homeData.saradeshArticles.map(mapBackendNewsToArticle);
     }
-    if (target === "national" && homeData?.nationalArticles && Array.isArray(homeData.nationalArticles) && homeData.nationalArticles.length > 0) {
+    if (target === "national" && Array.isArray(homeData?.nationalArticles) && homeData.nationalArticles.length > 0) {
       return homeData.nationalArticles.map(mapBackendNewsToArticle);
     }
-    if (target === "international" && homeData?.internationalArticles && Array.isArray(homeData.internationalArticles) && homeData.internationalArticles.length > 0) {
+    if (target === "politics" && Array.isArray(homeData?.politicsArticles) && homeData.politicsArticles.length > 0) {
+      return homeData.politicsArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "international" && Array.isArray(homeData?.internationalArticles) && homeData.internationalArticles.length > 0) {
       return homeData.internationalArticles.map(mapBackendNewsToArticle);
     }
-    if (target === "politics" && homeData?.politicsArticles && Array.isArray(homeData.politicsArticles) && homeData.politicsArticles.length > 0) {
-      return homeData.politicsArticles.map(mapBackendNewsToArticle);
+    if (target === "business" && Array.isArray(homeData?.businessArticles) && homeData.businessArticles.length > 0) {
+      return homeData.businessArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "economy") {
+      if (Array.isArray(homeData?.economyArticles) && homeData.economyArticles.length > 0) {
+        return homeData.economyArticles.map(mapBackendNewsToArticle);
+      }
+      if (freshEconomyArticles && freshEconomyArticles.length > 0) return freshEconomyArticles;
+    }
+    if (target === "crime-corruption" && Array.isArray(homeData?.crimeArticles) && homeData.crimeArticles.length > 0) {
+      return homeData.crimeArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "education" && Array.isArray(homeData?.educationArticles) && homeData.educationArticles.length > 0) {
+      return homeData.educationArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "sports" && Array.isArray(homeData?.sportsArticles) && homeData.sportsArticles.length > 0) {
+      return homeData.sportsArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "entertainment" && Array.isArray(homeData?.entertainmentArticles) && homeData.entertainmentArticles.length > 0) {
+      return homeData.entertainmentArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "religion" && Array.isArray(homeData?.religionArticles) && homeData.religionArticles.length > 0) {
+      return homeData.religionArticles.map(mapBackendNewsToArticle);
+    }
+    if (target === "accident" && Array.isArray(homeData?.accidentArticles) && homeData.accidentArticles.length > 0) {
+      return homeData.accidentArticles.map(mapBackendNewsToArticle);
+    }
+    if ((target === "women-and-children" || target === "women") && Array.isArray(homeData?.womenArticles) && homeData.womenArticles.length > 0) {
+      return homeData.womenArticles.map(mapBackendNewsToArticle);
+    }
+    if ((target === "literature-culture" || target === "literature") && Array.isArray(homeData?.literatureArticles) && homeData.literatureArticles.length > 0) {
+      return homeData.literatureArticles.map(mapBackendNewsToArticle);
     }
 
     // 2. Check categoryBlocks in homeData
@@ -320,7 +357,7 @@ export default async function HomePage() {
   return (
     <HomePageClient
       leadArticle={stripForHome(leadArticle)}
-      featuredArticles={stripListForHome(featuredArticles)}
+      featuredArticles={stripListForHome(resolvedFeatured)}
       latestArticles={stripListForHome(latestArticles)}
       popularArticles={stripListForHome(popularArticles)}
       nationalArticles={stripListForHome(nationalArticles)}

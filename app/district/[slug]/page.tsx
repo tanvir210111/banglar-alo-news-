@@ -87,19 +87,31 @@ export default async function DistrictNewsPage({ params, searchParams }: Distric
     }
   }
 
-  // 1. Fetch District Specific Articles from API & Local Mock
+  // 1. Fetch District Specific Articles from API & Local Mock (Section 6)
   let districtArticles: Article[] = [];
 
   try {
-    const [byDistrictRes, bySearchRes] = await Promise.allSettled([
-      api.get<any[]>(`/news?district=${encodeURIComponent(districtNameBn)}&limit=30`),
-      api.get<any[]>(`/news?searchTerm=${encodeURIComponent(districtNameBn)}&limit=30`),
+    const upazilaParam = selectedUpazila ? `&upazila=${encodeURIComponent(selectedUpazila)}` : "";
+    const [byDistrictBnRes, byDistrictEnRes, bySearchRes] = await Promise.allSettled([
+      api.get<any[]>(`/news?district=${encodeURIComponent(districtNameBn)}${upazilaParam}&limit=30`),
+      api.get<any[]>(`/news?district=${encodeURIComponent(districtNameEn)}${upazilaParam}&limit=30`),
+      api.get<any[]>(`/news?searchTerm=${encodeURIComponent(selectedUpazila || districtNameBn)}&limit=30`),
     ]);
 
     const seenIds = new Set<string>();
 
-    if (byDistrictRes.status === "fulfilled" && byDistrictRes.value?.success && Array.isArray(byDistrictRes.value.data)) {
-      for (const item of byDistrictRes.value.data) {
+    if (byDistrictBnRes.status === "fulfilled" && byDistrictBnRes.value?.success && Array.isArray(byDistrictBnRes.value.data)) {
+      for (const item of byDistrictBnRes.value.data) {
+        const art = mapBackendNewsToArticle(item);
+        if (art && !seenIds.has(art.id)) {
+          seenIds.add(art.id);
+          districtArticles.push(art);
+        }
+      }
+    }
+
+    if (byDistrictEnRes.status === "fulfilled" && byDistrictEnRes.value?.success && Array.isArray(byDistrictEnRes.value.data)) {
+      for (const item of byDistrictEnRes.value.data) {
         const art = mapBackendNewsToArticle(item);
         if (art && !seenIds.has(art.id)) {
           seenIds.add(art.id);

@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  (process.env.NEXT_PUBLIC_API_URL || "https://api.banglaralonews.com/api/v1").replace(/\/+$/, "");
+  (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5009/api/v1").replace(/\/+$/, "");
 
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -322,6 +322,14 @@ export const api = {
     return apiRequest<T>(endpoint, {
       method: "PATCH",
       body: payload ? JSON.stringify(payload) : undefined,
+      ...options,
+    });
+  },
+
+  put: <T = any>(endpoint: string, body?: any, options?: RequestInit) => {
+    return apiRequest<T>(endpoint, {
+      method: "PUT",
+      body: body ? JSON.stringify(body) : undefined,
       ...options,
     });
   },

@@ -66,3 +66,60 @@ export async function saveFamilyMembers(members: FamilyMember[]): Promise<boolea
 
   return true;
 }
+
+export async function createFamilyMember(member: Partial<FamilyMember>): Promise<any> {
+  try {
+    const res = await api.post("/our-family", member);
+    if (res?.success) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("banglar_alo_news_channel");
+          ch.postMessage({ type: "FAMILY_UPDATED" });
+        }
+      }
+      return res.data;
+    }
+  } catch (err) {
+    console.warn("Failed to create family member:", err);
+  }
+  return null;
+}
+
+export async function updateFamilyMember(id: string, updates: Partial<FamilyMember>): Promise<boolean> {
+  try {
+    const res = await api.put(`/our-family/${id}`, updates);
+    if (res?.success) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("banglar_alo_news_channel");
+          ch.postMessage({ type: "FAMILY_UPDATED" });
+        }
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to update family member:", err);
+  }
+  return false;
+}
+
+export async function deleteFamilyMember(id: string): Promise<boolean> {
+  try {
+    const res = await api.delete(`/our-family/${id}`);
+    if (res?.success) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("banglar_alo_news_channel");
+          ch.postMessage({ type: "FAMILY_UPDATED" });
+        }
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to delete family member:", err);
+  }
+  return false;
+}

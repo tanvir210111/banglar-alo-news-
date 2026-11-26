@@ -72,3 +72,68 @@ export async function saveVideoItems(videos: VideoItem[]): Promise<boolean> {
 
   return true;
 }
+
+export async function createVideoNews(video: {
+  title: string;
+  videoUrl: string;
+  thumbnail?: string;
+  category?: string;
+  duration?: string;
+  summary?: string;
+  isFeatured?: boolean;
+}): Promise<any> {
+  try {
+    const res = await api.post("/news/videos", video);
+    if (res?.success) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("banglar_alo_videos_updated", String(Date.now()));
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("banglar_alo_news_channel");
+          ch.postMessage({ type: "VIDEOS_UPDATED" });
+        }
+      }
+      return res.data;
+    }
+  } catch (err) {
+    console.warn("Failed to create video news:", err);
+  }
+  return null;
+}
+
+export async function updateVideoNews(id: string, updates: Partial<VideoItem>): Promise<boolean> {
+  try {
+    const res = await api.put(`/news/videos/${id}`, updates);
+    if (res?.success) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("banglar_alo_videos_updated", String(Date.now()));
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("banglar_alo_news_channel");
+          ch.postMessage({ type: "VIDEOS_UPDATED" });
+        }
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to update video news:", err);
+  }
+  return false;
+}
+
+export async function deleteVideoNews(id: string): Promise<boolean> {
+  try {
+    const res = await api.delete(`/news/videos/${id}`);
+    if (res?.success) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("banglar_alo_videos_updated", String(Date.now()));
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("banglar_alo_news_channel");
+          ch.postMessage({ type: "VIDEOS_UPDATED" });
+        }
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to delete video news:", err);
+  }
+  return false;
+}

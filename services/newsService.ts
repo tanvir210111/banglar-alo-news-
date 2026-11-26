@@ -889,15 +889,32 @@ export async function getPopularArticles(limit: number = 8): Promise<Article[]> 
 }
 
 export async function getBreakingNews(): Promise<BreakingNewsItem[]> {
+  // 1. Try public /breaking endpoint (Section 12 of API Guide)
+  try {
+    const res = await api.get<any[]>("/breaking");
+    if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+      return res.data.map((b) => ({
+        id: String(b.id || b._id),
+        headline: b.headline || b.title,
+        headlineEn: b.headlineEn || b.titleEn || b.headline || b.title,
+        slug: b.slug || b.link || "",
+        categoryName: b.categoryName || b.category?.name || "ব্রেকিং",
+        categoryNameEn: b.categoryNameEn || b.category?.nameEn || b.category?.slug || "Breaking",
+        publishedTime: formatToBengaliDate(b.publishedDate || b.createdAt),
+      }));
+    }
+  } catch {}
+
+  // 2. Try /news/breaking?limit=8
   try {
     const res = await api.get<any[]>("/news/breaking?limit=8");
     if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
       return res.data.map((b) => ({
         id: String(b.id || b._id),
-        headline: b.title,
-        headlineEn: b.titleEn || b.title,
-        slug: b.slug,
-        categoryName: b.category?.name || "ব্রেকিং",
+        headline: b.title || b.headline,
+        headlineEn: b.titleEn || b.headlineEn || b.title,
+        slug: b.slug || b.link || "",
+        categoryName: b.category?.name || b.categoryName || "ব্রেকিং",
         categoryNameEn: b.category?.nameEn || b.category?.slug || "Breaking",
         publishedTime: formatToBengaliDate(b.publishedDate || b.createdAt),
       }));
@@ -922,6 +939,64 @@ export async function getBreakingNews(): Promise<BreakingNewsItem[]> {
   } catch {
     return [];
   }
+}
+
+export async function getAllAdminBreakingNews(): Promise<any[]> {
+  try {
+    const res = await api.get<any[]>("/breaking/admin");
+    if (res?.success && Array.isArray(res.data)) {
+      return res.data;
+    }
+  } catch (err) {
+    console.warn("Failed to fetch admin breaking news:", err);
+  }
+  return [];
+}
+
+export async function createBreakingNews(payload: {
+  headline: string;
+  headlineEn?: string;
+  link?: string;
+  categoryName?: string;
+  priority?: number;
+  isActive?: boolean;
+}): Promise<any> {
+  try {
+    const res = await api.post("/breaking", payload);
+    if (res?.success) {
+      broadcastNewsUpdate();
+      return res.data;
+    }
+  } catch (err) {
+    console.warn("Failed to create breaking news:", err);
+  }
+  return null;
+}
+
+export async function updateBreakingNews(id: string, payload: any): Promise<boolean> {
+  try {
+    const res = await api.put(`/breaking/${id}`, payload);
+    if (res?.success) {
+      broadcastNewsUpdate();
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to update breaking news:", err);
+  }
+  return false;
+}
+
+export async function deleteBreakingNews(id: string): Promise<boolean> {
+  try {
+    const res = await api.delete(`/breaking/${id}`);
+    if (res?.success) {
+      broadcastNewsUpdate();
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to delete breaking news:", err);
+  }
+  return false;
 }
 
 export async function getGalleryItems(): Promise<GalleryItem[]> {
@@ -1037,12 +1112,92 @@ export async function searchArticles(
   return filtered;
 }
 
+// ----------------- Location & District Articles (Section 6) -----------------
+
+export async function getArticlesByLocation(params: {
+  district?: string;
+  upazila?: string;
+  division?: string;
+  page?: number;
+  limit?: number;
+}): Promise<Article[]> {
+  const page = params.page || 1;
+  const limit = params.limit || 20;
+  const queryParts: string[] = [`page=${page}`, `limit=${limit}`];
+
+  if (params.district) queryParts.push(`district=${encodeURIComponent(params.district)}`);
+  if (params.upazila) queryParts.push(`upazila=${encodeURIComponent(params.upazila)}`);
+  if (params.division) queryParts.push(`division=${encodeURIComponent(params.division)}`);
+
+  try {
+    const res = await api.get<any[]>(`/news?${queryParts.join("&")}`);
+    if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+      return res.data.map(mapBackendNewsToArticle);
+    }
+  } catch (err) {
+    console.warn("Failed to get articles by location:", err);
+  }
+
+  // Fallback to all articles filter
+  const all = await getAllArticles();
+  return all.filter((a: any) => {
+    if (params.district && a.district && a.district.toLowerCase() === params.district.toLowerCase()) return true;
+    if (params.upazila && a.upazila && a.upazila.toLowerCase() === params.upazila.toLowerCase()) return true;
+    return false;
+  });
+}
+
+// ----------------- Archive (Section 8) -----------------
+
+export async function getArticlesByArchive(params: {
+  date: string;
+  category?: string;
+  page?: number;
+  limit?: number;
+}): Promise<Article[]> {
+  const { date, category, page = 1, limit = 16 } = params;
+  if (!date) return [];
+
+  let url = `/news/archive?date=${encodeURIComponent(date)}&page=${page}&limit=${limit}`;
+  if (category && category !== "all") {
+    url += `&category=${encodeURIComponent(category)}`;
+  }
+
+  try {
+    const res = await api.get<any[]>(url);
+    if (res?.success && Array.isArray(res.data)) {
+      return res.data.map(mapBackendNewsToArticle);
+    }
+  } catch (err) {
+    console.warn("Failed to query /news/archive:", err);
+  }
+
+  // Fallback: match from local articles
+  const all = await getAllArticles();
+  return all.filter((a) => {
+    const pub = a.publishedAt ? a.publishedAt.slice(0, 10) : "";
+    const dateMatch = pub === date;
+    const catMatch = !category || category === "all" || a.category.slug === category;
+    return dateMatch && catMatch;
+  });
+}
+
 export async function getArchiveArticles(params: {
   year?: string;
   month?: string;
   category?: string;
   query?: string;
+  date?: string;
 }): Promise<Article[]> {
+  // If specific date provided, use the backend archive endpoint
+  if (params.date) {
+    return getArticlesByArchive({
+      date: params.date,
+      category: params.category,
+    });
+  }
+
+  // If specific year and month are provided, construct date if possible or try archive
   const all = await getAllArticles();
   let list = [...all];
 
@@ -1099,6 +1254,19 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     console.warn("Using default settings due to error:", err);
   }
   return defaultSettings;
+}
+
+export async function updateSiteSettings(settings: Partial<SiteSettings>): Promise<boolean> {
+  try {
+    const res = await api.patch("/settings", settings);
+    if (res?.success) {
+      broadcastNewsUpdate();
+      return true;
+    }
+  } catch (err) {
+    console.warn("Failed to update site settings:", err);
+  }
+  return false;
 }
 
 // ----------------- Newsletter -----------------
@@ -1345,37 +1513,105 @@ export function reportComment(articleId: string, commentId: string): boolean {
   return false;
 }
 
-// ----------------- Advertisements -----------------
+// ----------------- Advertisements (Section 11) -----------------
 
 export async function getActiveAds(placement?: string): Promise<any[]> {
   try {
-    const url = placement ? `/ads?placement=${placement}` : "/ads";
+    const url = placement ? `/ads?placement=${placement}` : "/ads/active";
     const res = await api.get<any[]>(url);
     if (res?.success && Array.isArray(res.data)) {
       return res.data;
     }
   } catch (err) {
-    console.warn("Could not fetch active ads");
+    try {
+      const res = await api.get<any[]>("/ads");
+      if (res?.success && Array.isArray(res.data)) return res.data;
+    } catch {}
   }
   return [];
 }
 
+export async function getAdSlots(): Promise<any> {
+  try {
+    const res = await api.get<any>("/ads/slots");
+    if (res?.success && res.data) {
+      return res.data;
+    }
+  } catch (err) {
+    console.warn("Could not fetch ad slots:", err);
+  }
+  return null;
+}
+
+export async function updateAdSlot(slotId: string, data: {
+  imageUrl: string;
+  targetUrl: string;
+  title?: string;
+  isActive?: boolean;
+}): Promise<boolean> {
+  try {
+    const res = await api.put(`/ads/slots/${slotId}`, data);
+    return Boolean(res?.success);
+  } catch (err) {
+    console.warn("Could not update ad slot:", err);
+    return false;
+  }
+}
+
 export async function trackAdImpression(adId: string): Promise<void> {
   if (!adId) return;
+  // Try unified POST /ads/track-impression with body { adId }
+  try {
+    await api.post("/ads/track-impression", { adId });
+    return;
+  } catch {}
+  // Fallback to /ads/:id/impression
   try {
     await api.post(`/ads/${adId}/impression`);
-  } catch { }
+  } catch {}
 }
 
 export async function trackAdClick(adId: string): Promise<string | null> {
   if (!adId) return null;
+  // Try unified POST /ads/track-click with body { adId }
+  try {
+    const res = await api.post<any>("/ads/track-click", { adId });
+    if (res?.success && res.data?.targetUrl) {
+      return res.data.targetUrl;
+    }
+  } catch {}
+  // Fallback to /ads/:id/click
   try {
     const res = await api.post<any>(`/ads/${adId}/click`);
     if (res?.success && res.data?.targetUrl) {
       return res.data.targetUrl;
     }
-  } catch { }
+  } catch {}
   return null;
+}
+
+// ----------------- Scraper & Auto News (Section 13) -----------------
+
+export async function scrapeNewsUrl(url: string): Promise<any> {
+  try {
+    const res = await api.post("/scraper/scrape", { url });
+    if (res?.success && res.data) {
+      return res.data;
+    }
+  } catch (err) {
+    console.warn("Failed to scrape URL:", err);
+  }
+  return null;
+}
+
+export async function toggleAutoNewsState(status: "ON" | "OFF"): Promise<boolean> {
+  try {
+    const res = await api.post("/auto-news/toggle", { status });
+    return Boolean(res?.success);
+  } catch (err) {
+    console.warn("Failed to toggle auto news:", err);
+    return false;
+  }
 }
 
 export function broadcastNewsUpdate() {

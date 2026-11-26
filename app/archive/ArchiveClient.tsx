@@ -13,6 +13,7 @@ interface ArchiveClientProps {
 }
 
 export default function ArchiveClient({ categories, initialArticles }: ArchiveClientProps) {
+  const [specificDate, setSpecificDate] = useState("");
   const [year, setYear] = useState("all");
   const [month, setMonth] = useState("all");
   const [category, setCategory] = useState("all");
@@ -24,8 +25,9 @@ export default function ArchiveClient({ categories, initialArticles }: ArchiveCl
     if (e) e.preventDefault();
     startTransition(async () => {
       const res = await getArchiveArticles({
-        year,
-        month,
+        date: specificDate || undefined,
+        year: !specificDate ? year : undefined,
+        month: !specificDate ? month : undefined,
         category,
         query,
       });
@@ -34,6 +36,7 @@ export default function ArchiveClient({ categories, initialArticles }: ArchiveCl
   };
 
   const handleReset = () => {
+    setSpecificDate("");
     setYear("all");
     setMonth("all");
     setCategory("all");
@@ -69,12 +72,25 @@ export default function ArchiveClient({ categories, initialArticles }: ArchiveCl
           </h1>
         </div>
         <p className="text-xs sm:text-sm text-[#626B75] mb-5">
-          অর্থনীতি সংবাদের প্রকাশিত সকল পুরাতন সংবাদ, সম্পাদকীয় এবং বিশেষ প্রতিবেদন তারিখ ও বিভাগ অনুযায়ী সহজেই খুঁজে নিন।
+          দৈনিক বাংলার আলো নিউজের প্রকাশিত সকল পুরাতন সংবাদ, সম্পাদকীয় এবং বিশেষ প্রতিবেদন তারিখ ও বিভাগ অনুযায়ী সহজেই খুঁজে নিন।
         </p>
 
         {/* Filter Form */}
         <form onSubmit={handleFilter} className="bg-[#f8f9fa] border border-[#CCD4DD] rounded-lg p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
+            {/* Specific Date Picker (API Guide Section 8) */}
+            <div>
+              <label className="block text-xs font-semibold text-[#202124] mb-1">
+                নির্দিষ্ট তারিখ:
+              </label>
+              <input
+                type="date"
+                value={specificDate}
+                onChange={(e) => setSpecificDate(e.target.value)}
+                className="w-full bg-white border border-[#CCD4DD] rounded px-3 py-1 text-xs focus:ring-1 focus:ring-[#0B7A43] focus:outline-none"
+              />
+            </div>
+
             {/* Year Selector */}
             <div>
               <label className="block text-xs font-semibold text-[#202124] mb-1">

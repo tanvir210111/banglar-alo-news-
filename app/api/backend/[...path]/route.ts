@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const TARGET_API = (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "https://api.banglaralonews.com/api/v1").replace(/\/+$/, "");
+const TARGET_API = (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5009/api/v1").replace(/\/+$/, "");
 
 interface ProxyCacheItem {
   body: ArrayBuffer;
