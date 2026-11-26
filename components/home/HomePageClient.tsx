@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Article } from "@/types/news";
 import { useLanguage, CATEGORY_NAME_EN } from "@/context/LanguageContext";
 import PopularScrollSection from "@/components/news/PopularScrollSection";
-import DualCategorySection from "@/components/news/DualCategorySection";
+import DualCategorySection, { CategoryColumn } from "@/components/news/DualCategorySection";
 import AdvertisementPlaceholder from "@/components/news/AdvertisementPlaceholder";
 import HomeFacebookVideoSection from "@/components/news/HomeFacebookVideoSection";
 import FacebookPageWidget from "@/components/common/FacebookPageWidget";
@@ -796,20 +796,25 @@ export default function HomePageClient({
         />
       </section>
 
-      {/* 11. সবার নিচে: নারী ও শিশু (Women & Children) & সাহিত্য ও সংস্কৃতি (Literature & Culture) */}
-      <section>
-        <DualCategorySection
-          firstCategory={{
-            title: isBn ? "নারী ও শিশু" : "Women & Children",
-            slug: "women-and-children",
-            articles: resolvedWomenArticles.slice(0, 5),
-          }}
-          secondCategory={{
-            title: isBn ? "সাহিত্য ও সংস্কৃতি" : "Literature & Culture",
-            slug: "literature-culture",
-            articles: resolvedLiteratureArticles.slice(0, 5),
-          }}
+      {/* 11. সবার নিচে: সাহিত্য ও সংস্কৃতি (Literature & Culture) এবং ডানে বিজ্ঞাপন */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-5 my-6 items-stretch">
+        <CategoryColumn
+          title={isBn ? "সাহিত্য ও সংস্কৃতি" : "Literature & Culture"}
+          slug="literature-culture"
+          articles={resolvedLiteratureArticles.slice(0, 5)}
         />
+        <div className="flex flex-col h-full bg-white border border-[#E2E6EB] p-4 sm:p-5 shadow-xs rounded-sm">
+          <div className="flex items-center justify-between border-b-2 border-[#0B7A43] pb-2 mb-3.5">
+            <h3 className="text-lg font-bold text-[#0B7A43] flex items-center gap-2">
+              <span className="w-2 h-4 bg-[#087A43] inline-block rounded-xs"></span>
+              <span>বিজ্ঞাপন</span>
+            </h3>
+            <span className="text-[11px] text-[#626B75]">স্পন্সরড</span>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center py-2">
+            <AdvertisementPlaceholder size="sidebar" className="w-full h-full min-h-[360px]" />
+          </div>
+        </div>
       </section>
 
       {/* Newsletter Form */}

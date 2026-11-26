@@ -102,13 +102,23 @@ function ArticlesListContent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const loadArticles = async (silent: boolean = false) => {
+  const loadArticles = async (
+    silent: boolean = false,
+    page: number = currentPage,
+    limit: number = pageSize
+  ) => {
     try {
+      if (!silent) setIsLoading(true);
       const isDraftRequested = statusParam === "DRAFT" || statusParam === "draft";
+      const actualLimit = limit > 0 ? limit : 50;
 
       if (isDraftRequested) {
-        const draftRes = await api.get<any[]>("/news/drafts?limit=50");
+        let draftUrl = `/news/drafts?page=${page}&limit=${actualLimit}`;
+        if (searchQuery) draftUrl += `&searchTerm=${encodeURIComponent(searchQuery)}`;
+        const draftRes = await api.get<any[]>(draftUrl);
         if (draftRes?.success && Array.isArray(draftRes.data)) {
+          const total = typeof draftRes.meta?.total === "number" ? draftRes.meta.total : draftRes.data.length;
+          setTotalCount(total);
           const draftList = draftRes.data.map((d) => ({
             ...mapBackendNewsToArticle(d),
             publishStatus: "DRAFT" as const,
@@ -116,26 +126,35 @@ function ArticlesListContent() {
           setArticles(draftList);
         }
       } else {
-        // Fast single fetch with limit=100 (fetches all articles in 1 round trip)
-        const liveRes = await api.get<any[]>("/news?limit=100&page=1");
+        const queryParams = [`page=${page}`, `limit=${actualLimit}`];
+        if (statusParam === "PUBLISHED" || statusParam === "published") {
+          queryParams.push("status=PUBLISHED");
+        }
+        if (filterParam === "breaking") {
+          queryParams.push("isBreaking=true");
+        }
+        if (filterParam === "special") {
+          queryParams.push("isFeatured=true");
+        }
+        if (selectedCategory && selectedCategory !== "all") {
+          queryParams.push(`category=${encodeURIComponent(selectedCategory)}`);
+        }
+        if (searchQuery && searchQuery.trim()) {
+          queryParams.push(`searchTerm=${encodeURIComponent(searchQuery.trim())}`);
+        }
+
+        const liveRes = await api.get<any[]>(`/news?${queryParams.join("&")}`);
         if (liveRes?.success && Array.isArray(liveRes.data)) {
-          const total = typeof liveRes.meta?.total === "number" ? liveRes.meta.total : liveRes.data.length;
+          const total =
+            typeof liveRes.meta?.total === "number"
+              ? liveRes.meta.total
+              : typeof liveRes.meta?.totalItems === "number"
+              ? liveRes.meta.totalItems
+              : liveRes.data.length;
           setTotalCount(total);
           setPublishedCount(total);
 
-          let all = [...liveRes.data];
-
-          // If there are more than 100 articles, fetch page 2
-          if (total > 100) {
-            try {
-              const p2Res = await api.get<any[]>("/news?limit=100&page=2");
-              if (p2Res?.success && Array.isArray(p2Res.data)) {
-                all.push(...p2Res.data);
-              }
-            } catch { }
-          }
-
-          const mappedAll = all.map(mapBackendNewsToArticle);
+          const mappedAll = liveRes.data.map(mapBackendNewsToArticle);
           setArticles(mappedAll);
           try {
             localStorage.setItem("admin_articles_cache", JSON.stringify(mappedAll));
@@ -162,11 +181,11 @@ function ArticlesListContent() {
   };
 
   useEffect(() => {
-    loadArticles();
+    loadArticles(false, currentPage, pageSize);
     getCategories().then((cats) => {
       if (cats && cats.length > 0) setDbCategories(cats);
     });
-  }, [statusParam, filterParam]);
+  }, [statusParam, filterParam, currentPage, pageSize, selectedCategory]);
 
   // Real-time synchronization when a new article is published from anywhere
   useEffect(() => {
@@ -467,17 +486,30 @@ function ArticlesListContent() {
   }, [searchQuery, selectedCategory, statusParam, filterParam]);
 
   const paginatedArticles = useMemo(() => {
-    if (pageSize === 0 || pageSize >= filteredArticles.length) {
-      return filteredArticles;
-    }
+    if (pageSize === 0) return filteredArticles;
+    if (filteredArticles.length <= pageSize) return filteredArticles;
     const start = (currentPage - 1) * pageSize;
     return filteredArticles.slice(start, start + pageSize);
   }, [filteredArticles, currentPage, pageSize]);
 
   const totalPages = useMemo(() => {
     if (pageSize === 0) return 1;
-    return Math.max(1, Math.ceil(filteredArticles.length / pageSize));
-  }, [filteredArticles.length, pageSize]);
+    const count = Math.max(totalCount, filteredArticles.length);
+    return Math.max(1, Math.ceil(count / pageSize));
+  }, [totalCount, filteredArticles.length, pageSize]);
+
+  const getAdminPageNumbers = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 3) {
+      return [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  };
 
   return (
     <div className="min-h-screen bg-[#F0F4FA] text-[#1E293B] flex flex-col font-sans">
@@ -955,11 +987,11 @@ function ArticlesListContent() {
                     ? 0
                     : `${(currentPage - 1) * (pageSize || filteredArticles.length) + 1} - ${Math.min(
                       currentPage * (pageSize || filteredArticles.length),
-                      filteredArticles.length
+                      Math.max(totalCount, filteredArticles.length)
                     )}`}
                 </strong>
                 <span>/ মোট</span>
-                <strong>{filterParam ? filteredArticles.length : Math.max(totalCount, filteredArticles.length)}</strong>
+                <strong>{Math.max(totalCount, filteredArticles.length)}</strong>
                 <span>টি সংবাদ</span>
 
                 <span className="mx-2 text-gray-300">|</span>
@@ -968,11 +1000,13 @@ function ArticlesListContent() {
                 <select
                   value={pageSize}
                   onChange={(e) => {
-                    setPageSize(Number(e.target.value));
+                    const nextSize = Number(e.target.value);
+                    setPageSize(nextSize);
                     setCurrentPage(1);
                   }}
                   className="px-2 py-1 bg-white border border-[#CBD5E1] rounded-lg text-xs font-semibold text-[#1E293B] cursor-pointer focus:outline-hidden"
                 >
+                  <option value={12}>১২ টি</option>
                   <option value={25}>২৫ টি</option>
                   <option value={50}>৫০ টি</option>
                   <option value={100}>১০০ টি</option>
@@ -982,7 +1016,7 @@ function ArticlesListContent() {
 
               {/* Page Buttons */}
               {totalPages > 1 && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -992,19 +1026,30 @@ function ArticlesListContent() {
                     পূর্ববর্তী
                   </button>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      type="button"
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`min-w-[28px] h-7 px-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${currentPage === pageNum
-                          ? "bg-[#3858F6] text-white"
-                          : "bg-white border border-[#CBD5E1] text-[#475569] hover:bg-gray-50"
+                  {getAdminPageNumbers().map((num, idx) => {
+                    if (num === "...") {
+                      return (
+                        <span key={`dots-${idx}`} className="px-1 text-xs text-gray-400 select-none">
+                          ...
+                        </span>
+                      );
+                    }
+                    const pageNum = Number(num);
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`min-w-[28px] h-7 px-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                          currentPage === pageNum
+                            ? "bg-[#3858F6] text-white"
+                            : "bg-white border border-[#CBD5E1] text-[#475569] hover:bg-gray-50"
                         }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
 
                   <button
                     type="button"

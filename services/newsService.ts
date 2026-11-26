@@ -724,7 +724,7 @@ export async function getPaginatedArticlesByCategory(
 
   // Fallback: match from getAllArticles
   try {
-    const all = await getAllArticles();
+    const all = await getAllArticles(200);
     const isMatch = (art: Article) => {
       const s = art.category?.slug?.toLowerCase()?.trim();
       const n = art.category?.name?.toLowerCase()?.trim();

@@ -17,13 +17,13 @@ const getImg = (img: any): string => {
   return url;
 };
 
-interface CategoryBlockProps {
+export interface CategoryBlockProps {
   title: string;
   slug: string;
   articles: Article[];
 }
 
-function CategoryColumn({ title, slug, articles }: CategoryBlockProps) {
+export function CategoryColumn({ title, slug, articles }: CategoryBlockProps) {
   const { isBn } = useLanguage();
 
   const displayTitle = !isBn
