@@ -214,43 +214,67 @@ fetch('/api/v1/news?district=ঢাকা&limit=20&page=1')
 
 ## ৮. সংবাদ আর্কাইভ অনুসন্ধান (News Archive Page)
 
-মেনুবারের **"আর্কাইভ"** পেজে নির্দিষ্ট তারিখ ও ক্যাটাগরি অনুযায়ী খবর খুঁজতে:
+মেনুবারের **"আর্কাইভ"** পেজে সকল সংরক্ষিত/আর্কাইভ খবর দেখতে এবং নির্দিষ্ট তারিখ ও ক্যাটাগরি অনুযায়ী খবর ফিল্টার করতে:
 
 * **Endpoint:** `GET /api/v1/news/archive`
-* **Query Parameters:**
-  - `date`: `YYYY-MM-DD` ফরম্যাটে নির্দিষ্ট তারিখ (**বাধ্যতামূলক**, যেমন: `2026-11-25`)
-  - `category`: ক্যাটাগরি স্লাগ (ঐচ্ছিক, যেমন: `national`, `sports`)
-  - `page`: default `1`
-  - `limit`: default `16`
+* **Query Parameters (সকল প্যারামিটারই ঐচ্ছিক / Optional):**
+  - `page`: পেজ নম্বর (default: `1`)
+  - `limit`: প্রতি পেজে নিউজ সংখ্যা (default: `16`, সর্বোচ্চ: `100`)
+  - `date`: `YYYY-MM-DD` ফরম্যাটে নির্দিষ্ট তারিখ (ঐচ্ছিক, যেমন: `2026-11-24`)
+  - `startDate`: রেঞ্জ অনুসন্ধানের শুরুর তারিখ (ঐচ্ছিক)
+  - `endDate`: রেঞ্জ অনুসন্ধানের শেষ তারিখ (ঐচ্ছিক)
+  - `category`: ক্যাটাগরি স্লাগ বা আইডি (ঐচ্ছিক, যেমন: `crime-corruption`, `national`, `sports`)
+  - `search`: শিরোনাম বা কনটেন্টে কীওয়ার্ড সার্চ (ঐচ্ছিক, যেমন: `মাদক`)
+  - `district`: জেলা অনুযায়ী ফিল্টার (ঐচ্ছিক, যেমন: `ঢাকা` বা `dhaka`)
+  - `upazila`: উপজেলা অনুযায়ী ফিল্টার (ঐচ্ছিক)
+  - `sortBy`: সর্ট ফিল্ড (default: `publishedDate`)
+  - `sortOrder`: `desc` (নতুনগুলো আগে) অথবা `asc` (পুরাতনগুলো আগে)
+
+> **নোট:** এই এন্ডপয়েন্টটি শুধুমাত্র যেসকল সংবাদের স্ট্যাটাস `ARCHIVED` কেবল সেগুলিই রিটার্ন করে (মোট সংখ্যা `total`-এও শুধু আর্কাইভ সংবাদই গণনা করা হয়)। কোনো প্যারামিটার না পাঠালে স্বয়ংক্ৰিয়ভাবে সকল আর্কাইভ সংবাদ পেজিনেশন (`meta: { page, limit, total, totalPages }`) আকারে আসে। আর কোনো ফিল্টার (যেমন `date`, `category`, `search`) দিলে সেই ফিল্টার অনুযায়ী আর্কাইভ ডেটা আসবে।
 
 ---
 
 ## ৯. ভিডিও সংবাদ ব্যবস্থাপনা API (Section 11)
 
-ফেসবুক পেজের ভিডিও, রিলস কিংবা ইউটিউব ভিডিও প্রদর্শনের জন্য:
+ফেসবুক পেজের ভিডিও, রিলস (Reels) কিংবা ইউটিউব ভিডিও প্রদর্শনের জন্য সম্পূর্ণ স্বয়ংক্রিয় এআই চালিত ভিডিও ম্যানেজমেন্ট:
 
 * **ভিডিও তালিকা ফেচ (Public):**
-  - `GET /api/v1/news/videos` (বা `GET /api/v1/videos`)
+  - `GET /api/v1/videos` (বা `GET /api/v1/news/videos`)
   - Query Params:
     - `limit`: ডিফল্ট ১০ (সর্বোচ্চ ৫০)
     - `category`: ঐচ্ছিক ফিল্টার (`"ভিডিও সংবাদ"`, `"টকশো"`, `"বিশেষ প্রতিবেদন"`, `"লাইভ"`)
     - `platform`: `"facebook"` | `"youtube"`
+    - `isFeatured`: `true` | `false`
+
+* **ভিডিও মেটাডেটা লাইভ প্রিভিউ (AI & Scraper Auto-Detection):**
+  - `GET /api/v1/videos/fetch-meta?url=<VIDEO_URL>` অথবা `POST /api/v1/videos/fetch-meta`
+  - Body: `{ "url": "https://www.youtube.com/watch?v=..." }` অথবা `{ "url": "https://www.facebook.com/reel/..." }`
+  - রেসপন্স: স্বয়ংক্রিয়ভাবে অরিজিনাল হাই-রেজুলেশন থাম্বনেইল, ভিডিওর সঠিক দৈর্ঘ্য/ডিউরেশন (বাংলা ফরম্যাট যেমন `"০৩:৩১"` ও `"03:31"`), আসল ভিউ কাউন্ট (`viewsCount`, e.g. `1000000` বা `7600`), প্ল্যাটফর্ম ও টাইটেল রিটার্ন করে।
+
 * **নতুন ভিডিও যুক্ত করা (Staff Protected):**
-  - `POST /api/v1/news/videos`
-  - Body:
+  - `POST /api/v1/videos` (বা `POST /api/v1/news/videos`)
+  - 💡 **অটোমেশন নোট:** আপনি শুধুমাত্র `videoUrl` পাঠালেই ব্যাকএন্ডের এআই ও মেটাডেটা ইঞ্জিন স্বয়ংক্রিয়ভাবে ভিডিওর অরিজিনাল থাম্বনেইল (`thumbnail`), প্ল্যাটফর্ম (`platform`), ভিডিওর সঠিক সময়কাল (`duration`) এবং সোশ্যাল মিডিয়ার প্রাথমিক ভিউ সংখ্যা (`viewsCount`, যেমন 1M বা 7.6K থাকলে সরাসরি সংখ্যায় কনভার্ট হয়ে `1000000` বা `7600`) ডাটাবেসে সেভ করে নেবে। যদি ম্যানুয়ালি দেন, তবে আপনার দেওয়া মান প্রাধান্য পাবে।
+  - Body (ন্যূনতম রিকোয়েস্ট):
     ```json
     {
-      "title": "সারাদেশের আজকের গুরুত্বপূর্ণ সংবাদ ও বিশেষ ভিডিও বুলেটিন",
-      "videoUrl": "https://www.facebook.com/BanglarAloNewsBD/videos/1234567890",
-      "thumbnail": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    }
+    ```
+  - Body (পূর্ণাঙ্গ ঐচ্ছিক কাস্টম রিকোয়েস্ট):
+    ```json
+    {
+      "title": "আজকের দিনের আলোচিত সর্বশেষ সংবাদ ও বিশেষ বুলেটিন",
+      "videoUrl": "https://www.facebook.com/reel/4275776555980402",
+      "thumbnail": "",  // ফাঁকা রাখলে স্বয়ংক্রিয়ভাবে অরিজিনাল থাম্বনেইল বসবে
+      "duration": "",   // ফাঁকা রাখলে স্বয়ংক্রিয়ভাবে ভিডিওর আসল সময়কাল যেমন "০৩:৩১" বসবে
+      "viewsCount": 0,  // ০ বা ফাঁকা রাখলে ফেসবুক/ইউটিউবের আসল ভিউ কাউন্ট (যেমন 7600 বা 1000000) বসবে
       "category": "ভিডিও সংবাদ",
-      "duration": "০৩:৪৫",
       "summary": "ভিডিও বুলেটিন সারসংক্ষেপ...",
       "isFeatured": true
     }
     ```
-* **ভিডিও আপডেট:** `PUT /api/v1/news/videos/:id`
-* **ভিডিও ডিলিট:** `DELETE /api/v1/news/videos/:id`
+* **ভিডিও আপডেট:** `PATCH /api/v1/videos/:id` (বা `PUT /api/v1/videos/:id`) - নতুন ভিডিও লিংক দিলে থাম্বনেইল ও সময়কাল স্বয়ংক্রিয়ভাবে রি-ফেচ হবে।
+* **ভিডিও ডিলিট:** `DELETE /api/v1/videos/:id`
 
 ---
 
@@ -425,3 +449,152 @@ export default async function HomePage() {
 প্রোজেক্টের রুটে প্রস্তুতকৃত পোস্টম্যান কালেকশন ফাইলটি রয়েছে:
 * 📄 `Banglaralonews-backend.postman_collection.json`
 * Postman ওপেন করে `Import` বাটনে ক্লিক করে ফাইলটি ড্রপ করুন। সকল এনভায়রনমেন্ট ভ্যারিয়েবল এবং প্রি-সেট রিকোয়েস্ট তৈরি করাই আছে।
+
+---
+
+## ১৮. নামাজের সময়সূচি API (Prayer Times API - Dhaka & Bangladesh)
+
+ইসলামিক ফাউন্ডেশন বাংলাদেশের নির্ভুল হিসাব (Karachi 18° প্যারামিটার এবং হানাফী আসর স্ট্যান্ডার্ড) অনুযায়ী রিয়েলটাইম নামাজের সময়সূচি।
+
+### ১৮.১ এন্ডপয়েন্টসমূহ:
+* **GET** `/api/v1/prayer-times` (ডিফল্ট ঢাকা ও বর্তমান সময়)
+* **GET** `/api/v1/prayer` (সংক্ষিপ্ত এলিয়াস)
+* **GET** `/api/v1/prayer-times/today`
+* **GET** `/api/v1/prayer-times/dhaka`
+
+### ১৮.২ কুয়েরি প্যারামিটারসমূহ (Optional):
+| প্যারামিটার | টাইপ | ডিফল্ট | বিবরণ | উদাহরণ |
+|:---|:---|:---|:---|:---|
+| `city` / `district` | string | `dhaka` | বাংলাদেশের যেকোনো জেলা/বিভাগীয় শহর | `chittagong`, `sylhet`, `rajshahi`, `khulna` ইত্যাদি |
+| `date` | string | আজকের তারিখ | নির্দিষ্ট তারিখের নামাজের সময়সূচি (YYYY-MM-DD) | `2026-11-28` |
+| `madhab` | string | `hanafi` | মাযহাব নির্ধারণ (`hanafi` অথবা `shafi`) | `hanafi` |
+
+### ১৮.৩ রেসপন্স স্ট্রাকচার (রিয়েলটাইম বর্তমান ওয়াক্ত, বাকি সময় ও পরবর্তী ওয়াক্ত সহ):
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "নামাজের সময়সূচি সফলভাবে পাওয়া গেছে",
+  "data": {
+    "location": {
+      "city": "Dhaka",
+      "cityBn": "ঢাকা",
+      "country": "Bangladesh",
+      "countryBn": "বাংলাদেশ",
+      "timezone": "Asia/Dhaka",
+      "coordinates": { "latitude": 23.8103, "longitude": 90.4125 }
+    },
+    "date": {
+      "gregorian": "2026-11-28",
+      "gregorianFormatted": "শনিবার, 28 November 2026",
+      "gregorianBn": "শনিবার, ২৮ নভেম্বর ২০২৬",
+      "currentTime": "04:15 PM",
+      "currentTimeBn": "০৪:১৫ অপরাহ্ন"
+    },
+    "currentWaqt": {
+      "key": "asr",
+      "nameEn": "Asr",
+      "nameBn": "আসর",
+      "startTime": { "time24": "15:35", "time12": "03:35 PM", "timeBn": "০৩:৩৫ অপরাহ্ন" },
+      "endTime": { "time24": "17:11", "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" },
+      "remaining": {
+        "hours": 0,
+        "minutes": 55,
+        "seconds": 40,
+        "totalSeconds": 3340,
+        "formattedEn": "55m",
+        "formattedBn": "৫৫ মিনিট"
+      },
+      "isProhibited": false,
+      "prohibitedWarning": null
+    },
+    "nextWaqt": {
+      "key": "maghrib",
+      "nameEn": "Maghrib",
+      "nameBn": "মাগরিব",
+      "startTime": { "time24": "17:11", "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" },
+      "startsIn": {
+        "hours": 0,
+        "minutes": 55,
+        "seconds": 40,
+        "totalSeconds": 3340,
+        "formattedEn": "55m",
+        "formattedBn": "৫৫ মিনিট"
+      }
+    },
+    "schedule": {
+      "sehriEnds": { "nameEn": "Sehri Ends", "nameBn": "সেহরি শেষ সময়", "time": { "time12": "04:58 AM", "timeBn": "০৪:৫৮ পূর্বাহ্ন" } },
+      "fajr": { "nameEn": "Fajr", "nameBn": "ফজর", "startTime": { "time12": "05:02 AM", "timeBn": "০৫:০২ পূর্বাহ্ন" }, "endTime": { "time12": "06:22 AM", "timeBn": "০৬:২২ পূর্বাহ্ন" } },
+      "sunrise": { "nameEn": "Sunrise", "nameBn": "সূর্যোদয়", "time": { "time12": "06:22 AM", "timeBn": "০৬:২২ পূর্বাহ্ন" } },
+      "ishraq": { "nameEn": "Ishraq", "nameBn": "ইশরাক", "startTime": { "time12": "06:37 AM", "timeBn": "০৬:৩৭ পূর্বাহ্ন" }, "endTime": { "time12": "11:32 AM", "timeBn": "১১:৩২ পূর্বাহ্ন" } },
+      "chasht": { "nameEn": "Chasht / Duha", "nameBn": "চাশত / দুহা", "startTime": { "time12": "06:37 AM", "timeBn": "০৬:৩৭ পূর্বাহ্ন" }, "endTime": { "time12": "11:32 AM", "timeBn": "১১:৩২ পূর্বাহ্ন" } },
+      "zawal": { "nameEn": "Zawal / Midday", "nameBn": "দ্বিপ্রহর / যাওয়াল", "time": { "time12": "11:37 AM", "timeBn": "১১:৩৭ পূর্বাহ্ন" } },
+      "dhuhr": { "nameEn": "Dhuhr", "nameBn": "যোহর", "startTime": { "time12": "11:47 AM", "timeBn": "১১:৪৭ পূর্বাহ্ন" }, "endTime": { "time12": "03:35 PM", "timeBn": "০৩:৩৫ অপরাহ্ন" } },
+      "asr": { "nameEn": "Asr (Hanafi)", "nameBn": "আসর (হানাফী)", "startTime": { "time12": "03:35 PM", "timeBn": "০৩:৩৫ অপরাহ্ন" }, "endTime": { "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" } },
+      "sunset": { "nameEn": "Sunset / Iftar", "nameBn": "সূর্যাস্ত / ইফতার", "time": { "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" } },
+      "iftar": { "nameEn": "Iftar Time", "nameBn": "ইফতারের সময়", "time": { "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" } },
+      "maghrib": { "nameEn": "Maghrib", "nameBn": "মাগরিব", "startTime": { "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" }, "endTime": { "time12": "06:30 PM", "timeBn": "০৬:৩০ অপরাহ্ন" } },
+      "isha": { "nameEn": "Isha", "nameBn": "এশা", "startTime": { "time12": "06:30 PM", "timeBn": "০৬:৩০ অপরাহ্ন" }, "endTime": { "time12": "05:03 AM", "timeBn": "০৫:০৩ পূর্বাহ্ন" } },
+      "tahajjud": { "nameEn": "Tahajjud", "nameBn": "তাহাজ্জুদ", "startTime": { "time12": "08:30 PM", "timeBn": "০৮:৩০ অপরাহ্ন" }, "endTime": { "time12": "04:58 AM", "timeBn": "০৪:৫৮ পূর্বাহ্ন" } }
+    },
+    "prohibitedTimes": [
+      {
+        "key": "sunrise",
+        "nameBn": "সূর্যোদয়কালীন নিষিদ্ধ সময়",
+        "startTime": { "time12": "06:22 AM", "timeBn": "০৬:২২ পূর্বাহ্ন" },
+        "endTime": { "time12": "06:37 AM", "timeBn": "০৬:৩৭ পূর্বাহ্ন" },
+        "descriptionBn": "সূর্যোদয় শুরু থেকে পরবর্তী ১৫ মিনিট পর্যন্ত সব ধরণের নামাজ পড়া নিষিদ্ধ।"
+      },
+      {
+        "key": "zawal",
+        "nameBn": "দ্বিপ্রহর / খাড়া দুপুরের নিষিদ্ধ সময়",
+        "startTime": { "time12": "11:37 AM", "timeBn": "১১:৩৭ পূর্বাহ্ন" },
+        "endTime": { "time12": "11:47 AM", "timeBn": "১১:৪৭ পূর্বাহ্ন" },
+        "descriptionBn": "ঠিক দ্বিপ্রহরে সূর্য মাথার ওপর থাকা অবস্থায় (যোহরের ওয়াক্ত শুরুর ১০ মিনিট পূর্ব পর্যন্ত) নামাজ পড়া নিষিদ্ধ।"
+      },
+      {
+        "key": "sunset",
+        "nameBn": "সূর্যাস্তকালীন নিষিদ্ধ সময়",
+        "startTime": { "time12": "04:56 PM", "timeBn": "০৪:৫৬ অপরাহ্ন" },
+        "endTime": { "time12": "05:11 PM", "timeBn": "০৫:১১ অপরাহ্ন" },
+        "descriptionBn": "সূর্য হলুদ বর্ণ ধারণ করা থেকে সূর্যাস্ত পর্যন্ত (মাগরিবের পূর্বের ১৫ মিনিট) নামাজ পড়া মাকরূহ।"
+      }
+    ]
+  }
+}
+```
+
+### ১৮.৪ ফ্রন্টএন্ড উইজেট কম্পোনেন্ট উদাহরণ (Next.js Header Widget):
+```tsx
+import React, { useEffect, useState } from "react";
+
+export default function PrayerTimesWidget() {
+  const [prayerData, setPrayerData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/prayer-times`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) setPrayerData(json.data);
+      })
+      .catch(console.error);
+  }, []);
+
+  if (!prayerData) return null;
+
+  const { currentWaqt, nextWaqt } = prayerData;
+
+  return (
+    <div className="flex items-center gap-3 bg-green-50 text-green-900 px-3 py-1.5 rounded-full text-xs font-medium">
+      <span className="flex h-2 w-2 rounded-full bg-green-600 animate-pulse"></span>
+      <span>
+        এখন <strong>{currentWaqt.nameBn}</strong> ওয়াক্ত (বাকি: {currentWaqt.remaining.formattedBn})
+      </span>
+      <span className="text-gray-300">|</span>
+      <span>
+        পরবর্তী: <strong>{nextWaqt.nameBn}</strong> ({nextWaqt.startTime.timeBn})
+      </span>
+    </div>
+  );
+}
+```

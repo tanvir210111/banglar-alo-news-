@@ -3329,6 +3329,34 @@
           }
         },
         {
+          "name": "Fetch Video Metadata & Thumbnail (AI Auto-detect)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://www.youtube.com/watch?v=jQ8_1ruz9vg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/videos/fetch-meta",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "videos",
+                "fetch-meta"
+              ]
+            },
+            "description": "ইউটিউব বা ফেসবুক ভিডিওর লিংক দিলে এর আসল হাই-রেজুলেশন থাম্বনেইল, ভিডিওর সঠিক দৈর্ঘ্য/ডিউরেশন এবং টাইটেল উদ্ধার করে।"
+          },
+          "response": []
+        },
+        {
           "name": "Create Video News (Staff)",
           "event": [
             {
@@ -3721,6 +3749,83 @@
               ]
             }
           }
+        }
+      ]
+    },
+    {
+      "name": "19. Prayer Times (নামাজের সময়সূচি)",
+      "item": [
+        {
+          "name": "Get Realtime Prayer Times (Dhaka Default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/prayer-times",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prayer-times"
+              ]
+            },
+            "description": "বর্তমান সময় অনুযায়ী ঢাকা শহরের নামাজের সময়সূচি, বর্তমান চলমান ওয়াক্ত, কত সময় বাকি আছে, পরবর্তী ওয়াক্ত কখন শুরু হবে, পূর্ণাঙ্গ শিডিউল এবং নিষিদ্ধ সময় প্রদান করে।"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prayer Times By District / City",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/prayer-times?city=chittagong",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prayer-times"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "chittagong",
+                  "description": "যেকোনো জেলা যেমন dhaka, chittagong, sylhet, rajshahi ইত্যাদি"
+                }
+              ]
+            },
+            "description": "বাংলাদেশের যেকোনো জেলার জন্য নামাজের রিয়েলটাইম সময়সূচি।"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prayer Times By Specific Date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/prayer-times?city=dhaka&date=2026-11-28",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prayer-times"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "dhaka"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-11-28",
+                  "description": "YYYY-MM-DD ফরম্যাটে নির্দিষ্ট তারিখ"
+                }
+              ]
+            },
+            "description": "ভবিষ্যতের বা নির্দিষ্ট তারিখের নামাজের সময়সূচি দেখতে।"
+          },
+          "response": []
         }
       ]
     }

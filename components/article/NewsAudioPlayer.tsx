@@ -68,16 +68,39 @@ export default function NewsAudioPlayer({
     initialY: 0,
   });
 
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
+  // Dynamic audio URL resolver that works seamlessly in local dev, VPS, and production
+  const streamSrc = React.useMemo(() => {
+    let raw = (audioUrl && String(audioUrl).trim()) || "";
+    if (!raw) {
+      if (articleId) {
+        raw = `/api/v1/news/${encodeURIComponent(articleId)}/audio`;
+      } else if (slug) {
+        raw = `/api/v1/news/slug/${encodeURIComponent(slug)}/audio`;
+      }
+    }
 
-  const streamSrc =
-    audioUrl ||
-    (slug
-      ? `${apiBase}/news/slug/${encodeURIComponent(slug)}/audio`
-      : articleId
-      ? `${apiBase}/news/${encodeURIComponent(articleId)}/audio`
-      : "");
+    if (!raw) return "";
+
+    // If full absolute URL
+    if (raw.startsWith("http://") || raw.startsWith("https://")) {
+      return raw;
+    }
+
+    // Relative path e.g. /api/v1/news/...
+    const cleanPath = raw.startsWith("/") ? raw : `/${raw}`;
+
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      if (host.includes("banglaralonews.com")) {
+        return `https://api.banglaralonews.com${cleanPath}`;
+      }
+    }
+
+    const envBase =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5009/api/v1";
+    const origin = envBase.replace(/\/api\/v1\/?$/, "");
+    return `${origin}${cleanPath}`;
+  }, [audioUrl, articleId, slug]);
 
   // Initialize position to bottom right of viewport
   useEffect(() => {
@@ -200,6 +223,9 @@ export default function NewsAudioPlayer({
       try {
         setIsLoading(true);
         setHasError(false);
+        if (audioRef.current.readyState === 0) {
+          audioRef.current.load();
+        }
         await audioRef.current.play();
         setIsPlaying(true);
       } catch (err) {
@@ -262,7 +288,8 @@ export default function NewsAudioPlayer({
       <audio
         ref={audioRef}
         src={streamSrc}
-        preload="none"
+        crossOrigin="anonymous"
+        preload="metadata"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={() => {

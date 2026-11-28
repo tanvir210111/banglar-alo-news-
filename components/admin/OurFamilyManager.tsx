@@ -19,7 +19,13 @@ import {
   Building,
 } from "lucide-react";
 import { FamilyMember, DEFAULT_FAMILY_MEMBERS } from "@/types/family";
-import { getFamilyMembers, saveFamilyMembers } from "@/services/familyService";
+import {
+  getFamilyMembers,
+  saveFamilyMembers,
+  createFamilyMember,
+  updateFamilyMember,
+  deleteFamilyMember,
+} from "@/services/familyService";
 
 export default function OurFamilyManager() {
   const [members, setMembers] = useState<FamilyMember[]>([]);
@@ -102,67 +108,80 @@ export default function OurFamilyManager() {
     e.preventDefault();
     if (!formData.name.trim() || !formData.role.trim()) return;
 
-    let updatedList: FamilyMember[];
-    if (editingMember) {
-      updatedList = members.map((m) =>
-        m.id === editingMember.id
-          ? {
-              ...m,
-              name: formData.name.trim(),
-              role: formData.role.trim(),
-              category: formData.category,
-              categoryTitle: formData.categoryTitle.trim(),
-              email: formData.email.trim(),
-              phone: formData.phone.trim(),
-              photo: formData.photo.trim(),
-              bio: formData.bio.trim(),
-              subMembers: formData.subMembers.trim(),
-              order: Number(formData.order) || 1,
-              isActive: formData.isActive,
-            }
-          : m
-      );
-      setSuccessMessage("সদস্য তথ্য সফলভাবে আপডেট করা হয়েছে!");
-    } else {
-      const newMember: FamilyMember = {
-        id: `fam-${Date.now()}`,
-        name: formData.name.trim(),
-        role: formData.role.trim(),
-        category: formData.category,
-        categoryTitle: formData.categoryTitle.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        photo: formData.photo.trim(),
-        bio: formData.bio.trim(),
-        subMembers: formData.subMembers.trim(),
-        order: Number(formData.order) || members.length + 1,
-        isActive: formData.isActive,
-      };
-      updatedList = [...members, newMember];
-      setSuccessMessage("নতুন সদস্য সফলভাবে পরিবারে যুক্ত করা হয়েছে!");
-    }
+    setLoading(true);
+    try {
+      if (editingMember) {
+        await updateFamilyMember(editingMember.id, {
+          name: formData.name.trim(),
+          role: formData.role.trim(),
+          category: formData.category,
+          categoryTitle: formData.categoryTitle.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          photo: formData.photo.trim(),
+          bio: formData.bio.trim(),
+          subMembers: formData.subMembers.trim(),
+          order: Number(formData.order) || 1,
+          isActive: formData.isActive,
+        });
+        setSuccessMessage("সদস্য তথ্য সফলভাবে আপডেট করা হয়েছে!");
+      } else {
+        await createFamilyMember({
+          name: formData.name.trim(),
+          role: formData.role.trim(),
+          category: formData.category,
+          categoryTitle: formData.categoryTitle.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          photo: formData.photo.trim(),
+          bio: formData.bio.trim(),
+          subMembers: formData.subMembers.trim(),
+          order: Number(formData.order) || members.length + 1,
+          isActive: formData.isActive,
+        });
+        setSuccessMessage("নতুন সদস্য সফলভাবে পরিবারে যুক্ত করা হয়েছে!");
+      }
 
-    setMembers(updatedList);
-    await saveFamilyMembers(updatedList);
-    setShowModal(false);
-    setTimeout(() => setSuccessMessage(""), 4000);
+      await loadData();
+    } catch (err) {
+      console.error("Save member error:", err);
+      setSuccessMessage("সদস্য সংরক্ষণ করতে সমস্যা হয়েছে।");
+    } finally {
+      setLoading(false);
+      setShowModal(false);
+      setTimeout(() => setSuccessMessage(""), 4000);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("আপনি কি নিশ্চিত এই সদস্যকে তালিকা থেকে মুছে ফেলতে চান?")) return;
-    const updated = members.filter((m) => m.id !== id);
-    setMembers(updated);
-    await saveFamilyMembers(updated);
-    setSuccessMessage("সদস্যকে তালিকা থেকে সরানো হয়েছে।");
-    setTimeout(() => setSuccessMessage(""), 3000);
+    setLoading(true);
+    try {
+      await deleteFamilyMember(id);
+      await loadData();
+      setSuccessMessage("সদস্যকে তালিকা থেকে সফলভাবে মুছে ফেলা হয়েছে।");
+    } catch (err) {
+      console.error("Delete member error:", err);
+      setSuccessMessage("সদস্য মুছতে সমস্যা হয়েছে।");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSuccessMessage(""), 3000);
+    }
   };
 
   const handleResetDefaults = async () => {
     if (confirm("আপনি কি মূল ডিফল্ট তালিকায় ফিরিয়ে নিতে চান?")) {
-      setMembers(DEFAULT_FAMILY_MEMBERS);
-      await saveFamilyMembers(DEFAULT_FAMILY_MEMBERS);
-      setSuccessMessage("ডিফল্ট পরিবার তালিকা রিস্টোর করা হয়েছে।");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      setLoading(true);
+      try {
+        await saveFamilyMembers(DEFAULT_FAMILY_MEMBERS);
+        await loadData();
+        setSuccessMessage("ডিফল্ট পরিবার তালিকা রিস্টোর করা হয়েছে।");
+      } catch (err) {
+        console.error("Reset defaults error:", err);
+      } finally {
+        setLoading(false);
+        setTimeout(() => setSuccessMessage(""), 3000);
+      }
     }
   };
 

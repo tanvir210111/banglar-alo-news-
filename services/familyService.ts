@@ -59,67 +59,119 @@ export async function saveFamilyMembers(members: FamilyMember[]): Promise<boolea
     } catch {}
   }
 
-  // Also attempt sending to backend
+  // Also attempt sending to backend sync endpoint
   try {
     await api.post("/our-family/sync", { members: sorted });
-  } catch {}
+  } catch (err) {
+    console.warn("Failed to sync family members with backend:", err);
+  }
 
   return true;
 }
 
 export async function createFamilyMember(member: Partial<FamilyMember>): Promise<any> {
+  let createdData: any = null;
   try {
     const res = await api.post("/our-family", member);
     if (res?.success) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
-        if ("BroadcastChannel" in window) {
-          const ch = new BroadcastChannel("banglar_alo_news_channel");
-          ch.postMessage({ type: "FAMILY_UPDATED" });
-        }
-      }
-      return res.data;
+      createdData = res.data;
     }
   } catch (err) {
-    console.warn("Failed to create family member:", err);
+    console.warn("Failed to create family member on backend:", err);
   }
-  return null;
+
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const parsed: FamilyMember[] = stored ? JSON.parse(stored) : [];
+      const newM: FamilyMember = {
+        id: createdData?.id || createdData?._id || `fam-${Date.now()}`,
+        name: member.name || "",
+        role: member.role || "",
+        category: (member.category as any) || "editorial",
+        categoryTitle: member.categoryTitle || "",
+        email: member.email || "",
+        phone: member.phone || "",
+        photo: member.photo || "",
+        bio: member.bio || "",
+        subMembers: member.subMembers || "",
+        order: member.order || parsed.length + 1,
+        isActive: member.isActive !== false,
+      };
+      const updated = [...parsed, newM].sort((a, b) => (a.order || 0) - (b.order || 0));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
+      if ("BroadcastChannel" in window) {
+        const ch = new BroadcastChannel("banglar_alo_news_channel");
+        ch.postMessage({ type: "FAMILY_UPDATED" });
+      }
+    } catch {}
+  }
+
+  return createdData;
 }
 
 export async function updateFamilyMember(id: string, updates: Partial<FamilyMember>): Promise<boolean> {
+  let success = false;
   try {
     const res = await api.put(`/our-family/${id}`, updates);
     if (res?.success) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
-        if ("BroadcastChannel" in window) {
-          const ch = new BroadcastChannel("banglar_alo_news_channel");
-          ch.postMessage({ type: "FAMILY_UPDATED" });
-        }
-      }
-      return true;
+      success = true;
     }
   } catch (err) {
-    console.warn("Failed to update family member:", err);
+    console.warn("Failed to update family member on backend:", err);
   }
-  return false;
+
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: FamilyMember[] = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const updated = parsed.map((m) => (m.id === id ? { ...m, ...updates } : m));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+          localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
+          if ("BroadcastChannel" in window) {
+            const ch = new BroadcastChannel("banglar_alo_news_channel");
+            ch.postMessage({ type: "FAMILY_UPDATED" });
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return success;
 }
 
 export async function deleteFamilyMember(id: string): Promise<boolean> {
+  let backendSuccess = false;
   try {
     const res = await api.delete(`/our-family/${id}`);
     if (res?.success) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
-        if ("BroadcastChannel" in window) {
-          const ch = new BroadcastChannel("banglar_alo_news_channel");
-          ch.postMessage({ type: "FAMILY_UPDATED" });
-        }
-      }
-      return true;
+      backendSuccess = true;
     }
   } catch (err) {
-    console.warn("Failed to delete family member:", err);
+    console.warn("Failed to delete family member from backend:", err);
   }
-  return false;
+
+  // Always update localStorage and broadcast immediately
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: FamilyMember[] = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const filtered = parsed.filter((m) => m.id !== id);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+          localStorage.setItem("banglar_alo_family_updated", String(Date.now()));
+          if ("BroadcastChannel" in window) {
+            const ch = new BroadcastChannel("banglar_alo_news_channel");
+            ch.postMessage({ type: "FAMILY_UPDATED" });
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return backendSuccess;
 }
