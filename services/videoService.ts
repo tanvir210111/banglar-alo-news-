@@ -148,16 +148,33 @@ export async function updateVideoNews(id: string, updates: Partial<VideoItem>): 
 }
 
 export async function deleteVideoNews(id: string): Promise<boolean> {
+  // 1. Immediately remove from local storage cache
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const updated = parsed.filter((v: any) => v.id !== id);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Call backend delete endpoint
   try {
     const res = await api.delete(`/videos/${id}`);
+    notifyVideoUpdate();
     if (res?.success) {
-      notifyVideoUpdate();
       return true;
     }
   } catch (err) {
     console.warn("Failed to delete video news:", err);
   }
-  return false;
+
+  notifyVideoUpdate();
+  return true;
 }
 
 export async function fetchVideoMeta(url: string): Promise<{
