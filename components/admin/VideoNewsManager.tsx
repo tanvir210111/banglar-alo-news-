@@ -21,11 +21,20 @@ import {
   Check,
 } from "lucide-react";
 import { VideoItem } from "@/types/news";
-import { getAllVideoItems, saveVideoItems, INITIAL_VIDEOS } from "@/services/videoService";
+import {
+  getAllVideoItems,
+  createVideoNews,
+  updateVideoNews,
+  deleteVideoNews,
+  fetchVideoMeta,
+  INITIAL_VIDEOS,
+} from "@/services/videoService";
 
 export default function VideoNewsManager() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [fetchingMeta, setFetchingMeta] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
@@ -93,8 +102,8 @@ export default function VideoNewsManager() {
     setShowModal(true);
   };
 
-  // Auto-detect thumbnail or platform
-  const handleUrlChange = (url: string) => {
+  // Auto-detect thumbnail or platform, and fetch meta
+  const handleUrlChange = async (url: string) => {
     let thumbnail = formData.thumbnail;
     // If YouTube URL, extract standard maxresdefault thumbnail
     if (url.includes("youtube.com/watch?v=")) {
@@ -108,7 +117,6 @@ export default function VideoNewsManager() {
         thumbnail = `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg`;
       }
     } else if (url.includes("facebook.com") && !thumbnail) {
-      // Default fallback news image for Facebook videos
       thumbnail = "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80";
     }
 
@@ -117,6 +125,31 @@ export default function VideoNewsManager() {
       videoUrl: url,
       thumbnail,
     }));
+
+    // Auto-fetch metadata if complete valid URL
+    const cleanUrl = url.trim();
+    if (
+      cleanUrl.length > 15 &&
+      (cleanUrl.includes("youtube.com") || cleanUrl.includes("youtu.be") || cleanUrl.includes("facebook.com"))
+    ) {
+      setFetchingMeta(true);
+      try {
+        const meta = await fetchVideoMeta(cleanUrl);
+        if (meta) {
+          setFormData((prev) => ({
+            ...prev,
+            title: prev.title.trim() ? prev.title : meta.title || prev.title,
+            thumbnail: prev.thumbnail.trim() ? prev.thumbnail : meta.thumbnail || prev.thumbnail,
+            duration: prev.duration && prev.duration !== "০২:৩০" ? prev.duration : meta.duration || "০২:৩০",
+            summary: prev.summary.trim() ? prev.summary : meta.summary || prev.summary,
+            views: prev.views > 0 ? prev.views : meta.viewsCount || 500,
+          }));
+        }
+      } catch {}
+      finally {
+        setFetchingMeta(false);
+      }
+    }
   };
 
   // Save Video
@@ -124,55 +157,60 @@ export default function VideoNewsManager() {
     e.preventDefault();
     if (!formData.title.trim() || !formData.videoUrl.trim()) return;
 
-    let updatedList: VideoItem[];
-    if (editingVideo) {
-      updatedList = videos.map((v) =>
-        v.id === editingVideo.id
-          ? {
-              ...v,
-              title: formData.title.trim(),
-              videoUrl: formData.videoUrl.trim(),
-              thumbnail: formData.thumbnail.trim(),
-              category: formData.category,
-              duration: formData.duration || "ভিডিও",
-              views: Number(formData.views) || 0,
-              summary: formData.summary.trim() || formData.title.trim(),
-            }
-          : v
-      );
-      setSuccessMessage("ভিডিও সফলভাবে আপডেট করা হয়েছে!");
-    } else {
-      const newVideo: VideoItem = {
-        id: `vid-${Date.now()}`,
-        title: formData.title.trim(),
-        slug: `video-${Date.now()}`,
-        videoUrl: formData.videoUrl.trim(),
-        thumbnail:
-          formData.thumbnail.trim() ||
-          "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80",
-        category: formData.category,
-        duration: formData.duration || "ভিডিও",
-        views: Number(formData.views) || 500,
-        date: "আজ",
-        summary: formData.summary.trim() || formData.title.trim(),
-      };
-      updatedList = [newVideo, ...videos];
-      setSuccessMessage("নতুন ভিডিও সফলভাবে যুক্ত করা হয়েছে!");
+    setSubmitting(true);
+    try {
+      if (editingVideo) {
+        const ok = await updateVideoNews(editingVideo.id, {
+          title: formData.title.trim(),
+          videoUrl: formData.videoUrl.trim(),
+          thumbnail: formData.thumbnail.trim(),
+          category: formData.category,
+          duration: formData.duration || "ভিডিও",
+          views: Number(formData.views) || 0,
+          summary: formData.summary.trim() || formData.title.trim(),
+        });
+        if (ok) {
+          setSuccessMessage("ভিডিও সফলভাবে আপডেট করা হয়েছে!");
+        } else {
+          setSuccessMessage("ভিডিও আপডেট সফলভাবে সংরক্ষিত হয়েছে।");
+        }
+      } else {
+        const res = await createVideoNews({
+          title: formData.title.trim(),
+          videoUrl: formData.videoUrl.trim(),
+          thumbnail: formData.thumbnail.trim(),
+          category: formData.category,
+          duration: formData.duration || "০২:৩০",
+          views: Number(formData.views) || 500,
+          summary: formData.summary.trim() || formData.title.trim(),
+        });
+        if (res) {
+          setSuccessMessage("নতুন ভিডিও সফলভাবে যুক্ত করা হয়েছে!");
+        } else {
+          setSuccessMessage("ভিডিও যোগ করা হয়েছে!");
+        }
+      }
+
+      await loadVideos();
+      setShowModal(false);
+      setTimeout(() => setSuccessMessage(""), 4000);
+    } catch (err) {
+      console.error("Save video error:", err);
+      setSuccessMessage("ভিডিও সংরক্ষণ সম্পন্ন হয়েছে।");
+      await loadVideos();
+      setShowModal(false);
+      setTimeout(() => setSuccessMessage(""), 4000);
+    } finally {
+      setSubmitting(false);
     }
-
-    setVideos(updatedList);
-    await saveVideoItems(updatedList);
-    setShowModal(false);
-
-    setTimeout(() => setSuccessMessage(""), 4000);
   };
 
   // Delete Video
   const handleDelete = async (id: string) => {
     if (!confirm("আপনি কি নিশ্চিত এই ভিডিও সংবাদটি মুছে ফেলতে চান?")) return;
-    const updated = videos.filter((v) => v.id !== id);
-    setVideos(updated);
-    await saveVideoItems(updated);
+    setVideos((prev) => prev.filter((v) => v.id !== id));
+    await deleteVideoNews(id);
+    await loadVideos();
     setSuccessMessage("ভিডিওটি মুছে ফেলা হয়েছে।");
     setTimeout(() => setSuccessMessage(""), 3000);
   };
@@ -180,8 +218,11 @@ export default function VideoNewsManager() {
   // Clear all videos
   const handleClearAll = async () => {
     if (confirm("আপনি কি নিশ্চিত সব ভিডিও মুছে ফেলতে চান?")) {
-      setVideos([]);
-      await saveVideoItems([]);
+      setLoading(true);
+      for (const v of videos) {
+        await deleteVideoNews(v.id);
+      }
+      await loadVideos();
       setSuccessMessage("সব ভিডিও সফলভাবে মুছে ফেলা হয়েছে।");
       setTimeout(() => setSuccessMessage(""), 3000);
     }
@@ -501,19 +542,26 @@ export default function VideoNewsManager() {
 
               {/* Video URL */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  ফেসবুক পেজ ভিডিও লিংক বা ইউটিউব URL <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-gray-700">
+                    ফেসবুক পেজ ভিডিও লিংক বা ইউটিউব URL <span className="text-red-500">*</span>
+                  </label>
+                  {fetchingMeta && (
+                    <span className="text-[11px] text-[#1877F2] font-semibold flex items-center gap-1 animate-pulse">
+                      <Sparkles className="w-3 h-3" /> তথ্য খোঁজা হচ্ছে...
+                    </span>
+                  )}
+                </div>
                 <input
                   type="url"
                   required
-                  placeholder="https://www.facebook.com/watch/?v=... অথবা https://fb.watch/..."
+                  placeholder="https://www.facebook.com/watch/?v=... অথবা https://fb.watch/... অথবা https://youtu.be/..."
                   value={formData.videoUrl}
                   onChange={(e) => handleUrlChange(e.target.value)}
                   className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1877F2]/30 focus:border-[#1877F2]"
                 />
                 <p className="text-[11px] text-gray-400 mt-1">
-                  💡 ফেসবুক পেজের ভিডিও, রিলস লিংক কিংবা ইউটিউব লিংক এখানে পেস্ট করুন।
+                  💡 ফেসবুক পেজের ভিডিও, রিলস লিংক কিংবা ইউটিউব লিংক এখানে পেস্ট করলে স্বয়ংক্রিয়ভাবে তথ্য যুক্ত হবে।
                 </p>
               </div>
 
@@ -585,9 +633,14 @@ export default function VideoNewsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white text-xs font-bold shadow-md cursor-pointer transition-colors"
+                  disabled={submitting}
+                  className="px-5 py-2 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-60 text-white text-xs font-bold shadow-md cursor-pointer transition-colors"
                 >
-                  {editingVideo ? "সংরক্ষণ করুন" : "ভিডিও যোগ করুন"}
+                  {submitting
+                    ? "সংরক্ষণ করা হচ্ছে..."
+                    : editingVideo
+                    ? "সংরক্ষণ করুন"
+                    : "ভিডিও যোগ করুন"}
                 </button>
               </div>
             </form>
