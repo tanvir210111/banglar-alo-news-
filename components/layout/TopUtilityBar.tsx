@@ -34,7 +34,6 @@ import {
 } from "@/services/weatherService";
 import { WeatherData, WeatherLocation, WeatherFetchStatus } from "@/types/weather";
 import SocialMediaIcons from "@/components/common/SocialMediaIcons";
-import PrayerTimesWidget from "@/components/common/PrayerTimesWidget";
 import { useLanguage } from "@/context/LanguageContext";
 
 const ENGLISH_WEATHER_CONDITIONS: Record<string, string> = {
@@ -379,9 +378,6 @@ export default function TopUtilityBar() {
             </div>
           )}
         </div>
-
-        {/* Real-time Prayer Times Widget (Islamic Foundation Bangladesh Standard) */}
-        <PrayerTimesWidget />
 
         {/* Vertical divider */}
         <span className="text-[#CBD5E1] hidden sm:inline" aria-hidden="true">

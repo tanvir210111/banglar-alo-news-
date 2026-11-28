@@ -11,6 +11,7 @@ import AdvertisementPlaceholder from "@/components/news/AdvertisementPlaceholder
 import HomeFacebookVideoSection from "@/components/news/HomeFacebookVideoSection";
 import FacebookPageWidget from "@/components/common/FacebookPageWidget";
 import BangladeshMapWidget from "@/components/news/BangladeshMapWidget";
+import PrayerTimesWidget from "@/components/common/PrayerTimesWidget";
 import RecentPopularTabWidget from "@/components/news/RecentPopularTabWidget";
 import NewsletterForm from "@/components/news/NewsletterForm";
 import { ChevronRight, Play, Clock, Newspaper, Sparkles, Flag, MapPin } from "lucide-react";
@@ -607,6 +608,11 @@ export default function HomePageClient({
             {/* 3. Sidebar Advertisement beneath Map Widget */}
             <div className="w-full mt-1">
               <AdvertisementPlaceholder size="sidebar" className="w-full" />
+            </div>
+
+            {/* 4. নামাজের সময়সূচি (Islamic Foundation Bangladesh Prayer Times Widget) */}
+            <div className="w-full mt-1">
+              <PrayerTimesWidget />
             </div>
           </div>
         </div>
