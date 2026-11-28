@@ -122,15 +122,23 @@ export default function PrayerTimesWidget({ className = "" }: PrayerTimesWidgetP
       {/* 1. Header with Islamic Green Gradient & City Selector */}
       <div className="bg-gradient-to-r from-[#0B7A43] via-[#065F34] to-[#044424] text-white px-3.5 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="p-1.5 rounded-lg bg-white/15 backdrop-blur-xs text-emerald-200">
-            <Clock className="w-4 h-4" />
+          <span className="p-1.5 rounded-lg bg-white/15 backdrop-blur-xs text-white">
+            <Clock className="w-4 h-4 text-white" style={{ color: "#ffffff" }} />
           </span>
           <div>
-            <h3 className="font-extrabold text-sm sm:text-base leading-tight flex items-center gap-1.5">
-              <span>আজকের নামাজের সময়সূচি</span>
+            <h3
+              className="font-extrabold text-sm sm:text-base leading-tight flex items-center gap-1.5 text-white"
+              style={{ color: "#ffffff" }}
+            >
+              <span className="text-white" style={{ color: "#ffffff" }}>
+                আজকের নামাজের সময়সূচি
+              </span>
               <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
             </h3>
-            <span className="text-[10px] text-emerald-200 block">
+            <span
+              className="text-[10.5px] font-medium text-emerald-100 block mt-0.5"
+              style={{ color: "#ecfdf5" }}
+            >
               ইসলামিক ফাউন্ডেশন বাংলাদেশ অনুযায়ী
             </span>
           </div>
@@ -141,7 +149,8 @@ export default function PrayerTimesWidget({ className = "" }: PrayerTimesWidgetP
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-2 py-1 rounded-md border border-white/20 focus:outline-none appearance-none pr-5 cursor-pointer"
+            style={{ color: "#ffffff" }}
+            className="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-md border border-white/30 focus:outline-none appearance-none pr-5 cursor-pointer"
           >
             {CITIES.map((c) => (
               <option key={c.id} value={c.id} className="text-gray-900 bg-white">
@@ -149,7 +158,7 @@ export default function PrayerTimesWidget({ className = "" }: PrayerTimesWidgetP
               </option>
             ))}
           </select>
-          <ChevronDown className="w-3 h-3 text-white/80 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3 h-3 text-white absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 
@@ -202,6 +211,7 @@ export default function PrayerTimesWidget({ className = "" }: PrayerTimesWidgetP
             return (
               <div
                 key={p.key}
+                style={isCurrent ? { color: "#ffffff" } : {}}
                 className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all ${
                   isCurrent
                     ? "bg-[#0B7A43] text-white font-bold shadow-xs scale-[1.01]"
@@ -210,14 +220,19 @@ export default function PrayerTimesWidget({ className = "" }: PrayerTimesWidgetP
               >
                 <div className="flex items-center gap-2">
                   <Icon className={`w-3.5 h-3.5 ${isCurrent ? "text-yellow-300" : "text-[#0B7A43]"}`} />
-                  <span className="text-xs sm:text-[13px]">{p.nameBn}</span>
+                  <span className="text-xs sm:text-[13px]" style={isCurrent ? { color: "#ffffff" } : {}}>
+                    {p.nameBn}
+                  </span>
                   {isCurrent && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 text-emerald-100 font-normal">
+                    <span
+                      className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-normal"
+                      style={{ color: "#ffffff" }}
+                    >
                       চলছে
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 font-mono">
+                <div className="flex items-center gap-1.5 font-mono" style={isCurrent ? { color: "#ffffff" } : {}}>
                   <span>{p.startTime}</span>
                 </div>
               </div>
