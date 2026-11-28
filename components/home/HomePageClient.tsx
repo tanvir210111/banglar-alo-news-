@@ -488,11 +488,11 @@ export default function HomePageClient({
         seenIds.add(a.id);
         if (a.slug) seenSlugs.add(a.slug);
         list.push(a);
-        if (list.length >= 15) break;
+        if (list.length >= 18) break;
       }
     }
 
-    if (list.length < 15) {
+    if (list.length < 18) {
       const candidates = [
         ...liveLatest,
         ...popularArticles,
@@ -512,7 +512,7 @@ export default function HomePageClient({
         if (!seenIds.has(a.id)) {
           seenIds.add(a.id);
           list.push(a);
-          if (list.length >= 15) break;
+          if (list.length >= 18) break;
         }
       }
     }
